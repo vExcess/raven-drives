@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Raven Drives{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="navbar">
+        <a href="{{ url_for('index') }}" class="brand">RAVEN<span>DRIVES</span></a>
+        <div>
+            {% if request.endpoint != 'login' %}
+                <a href="{{ url_for('login') }}" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
+            {% else %}
+                <span class="display_name" id="user_display_name"></span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const displayName = getCookie('display_name');
+            if (displayName) {
+                document.getElementById('user_display_name').textContent = displayName;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Raven Drives - Sign Up{% endblock %}
+
+{% block content %}
+    <div class="centered-form-wrapper">
+        <h2 class="text-center w-100">Join the Crew</h2>
+        <form action="signup.html" method="post">
+            <div>
+                <label>Email</label>
+                <input type="email" name="email" placeholder="user@bc.edu" required>
+            </div>
+            <div>
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Create a password" required>
+            </div>
+            <div>
+                <label>Display Name</label>
+                <input type="text" name="display_name" placeholder="Racer X" required>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <input type="submit" value="Sign Up" class="btn w-100">
+            </div>
+        </form>
+        <div style="margin-top: 20px; text-align: center; font-size: 0.9rem;">
+            <p style="color: #666;">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+        </div>
+    </div>
+{% endblock %}
+

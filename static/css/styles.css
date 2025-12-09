@@ -1,0 +1,222 @@
+/* Clean Red & Black Racing Aesthetic (lmk if this is cheesy)*/
+
+:root {
+    --racing-red: #e60000;
+    --dark-bg: #0f0f0f;
+    --card-bg: #1a1a1a;
+    --text-color: #f0f0f0;
+    --input-bg: #2b2b2b;
+    --border-radius: 4px;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Background Texture - optional, simple diagonal lines break up the dark background*/
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.03),
+        rgba(255, 255, 255, 0.03) 1px,
+        transparent 1px,
+        transparent 20px
+    );
+    pointer-events: none;
+    z-index: -1;
+}
+
+a {
+    color: var(--racing-red);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #ff3333;
+}
+
+/* Layout Utilities */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.centered-form-wrapper {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-left: 5px solid var(--racing-red);
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Dynamic accent line */
+.centered-form-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 5px;
+    background: var(--racing-red);
+    transform: skewX(-45deg);
+    transform-origin: top right;
+}
+
+h1, h2, h3 {
+    text-transform: uppercase;
+    font-style: italic; /* Racing vibe */
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--racing-red);
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+/* Forms */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-size: 0.9rem;
+    color: #aaa;
+    margin-bottom: 5px;
+    display: block;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="datetime-local"],
+input[type="number"] {
+    background-color: var(--input-bg);
+    border: 1px solid #333;
+    color: var(--text-color);
+    padding: 12px;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus {
+    outline: none;
+    border-color: var(--racing-red);
+    box-shadow: 0 0 0 2px rgba(230, 0, 0, 0.2);
+}
+
+/* Buttons */
+button,
+input[type="submit"],
+.btn {
+    background-color: var(--racing-red);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-style: italic;
+    border-radius: var(--border-radius);
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+    display: inline-block;
+    text-align: center;
+}
+
+button:hover,
+input[type="submit"]:hover,
+.btn:hover {
+    background-color: #ff1a1a;
+    transform: skewX(-10deg) scale(1.05); /* PARRALLELOGRAM EFFECT, I CHOOSE YOU! */
+    box-shadow: 0 0 15px rgba(230, 0, 0, 0.6);
+}
+
+button:active,
+input[type="submit"]:active {
+    transform: skewX(-10deg) scale(0.98);
+}
+
+/* Navbar if needed */
+.navbar {
+    width: 100%;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(5px);
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    z-index: 100;
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: 900;
+    font-style: italic;
+    color: white;
+}
+.brand span {
+    color: var(--racing-red);
+}
+
+/* Utility for spacing */
+.mt-4 { margin-top: 1rem; }
+.mb-4 { margin-bottom: 1rem; }
+.w-100 { width: 100%; }
+.text-center { text-align: center; }
+
+/* Styles for specific pages */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 600px;
+}
+
+.menu-card {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    text-align: center;
+    border: 1px solid #333;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.menu-card:hover {
+    transform: translateY(-5px);
+    border: 1px solid var(--racing-red);
+}

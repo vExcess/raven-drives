@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Raven Drives - Offer Ride{% endblock %}
+
+{% block content %}
+    <div class="centered-form-wrapper" style="max-width: 500px;">
+        <h2 class="text-center w-100">Offer a Ride</h2>
+        <form action="{{ url_for('offer') }}" method="post">
+            <div>
+                <label>Pickup Location</label>
+                <input type="text" name="pickup_location" placeholder="e.g. KC Airport" required>
+            </div>
+            <div>
+                <label>Dropoff Location</label>
+                <input type="text" name="dropoff_location" placeholder="e.g. The Joe" required>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Pickup Time</label>
+                    <input type="datetime-local" name="pickup_time" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Dropoff Time</label>
+                    <input type="datetime-local" name="dropoff_time" required>
+                </div>
+            </div>
+            <div>
+                <label>Fee ($)</label>
+                <input type="number" name="price" min="0" placeholder="20" required>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">
+                <input type="submit" value="Post Offer" class="btn w-100">
+            </div>
+        </form>
+    </div>
+{% endblock %}
+
