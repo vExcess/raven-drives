@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raven Drives</title>
+    <link rel="stylesheet" href="static/styles.css">
+</head>
+<body>
+    <div class="navbar">
+        <a href="" class="brand">RAVEN<span>DRIVES</span></a>
+        <div>
+            <% if (userDisplayName) { %>
+                <span class="display_name" id="user_display_name"><%= userDisplayName %></span>
+            <% } else if (request.endpoint != 'login') { %>
+                <a href="login" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+</body>
+</html>
