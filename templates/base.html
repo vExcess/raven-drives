@@ -10,10 +10,10 @@
     <div class="navbar">
         <a href="{{ url_for('index') }}" class="brand">RAVEN<span>DRIVES</span></a>
         <div>
-            {% if request.endpoint != 'login' %}
+            {% if user_display_name %}
+                <span class="display_name" id="user_display_name">{{ user_display_name }}</span>
+            {% elif request.endpoint != 'login' %}
                 <a href="{{ url_for('login') }}" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
-            {% else %}
-                <span class="display_name" id="user_display_name"></span>
             {% endif %}
         </div>
     </div>
@@ -22,13 +22,5 @@
         {% block content %}{% endblock %}
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const displayName = getCookie('user_display_name');
-            if (displayName) {
-                document.getElementById('user_display_name').textContent = displayName;
-            }
-        });
-    </script>
 </body>
 </html>

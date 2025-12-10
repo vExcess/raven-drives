@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Raven Drives - Check Your Inbox{% endblock %}
+
+{% block content %}
+    <div class="centered-form-wrapper" style="text-align: center;">
+        <h2 class="text-center w-100" style="color: var(--racing-red);">Check Your Inbox</h2>
+        
+        <p style="margin: 20px 0; font-size: 1.1rem; color: #ccc;">
+            We've sent a confirmation email to your inbox.<br>
+            Please click the link in that email to start your engine.
+        </p>
+
+        <div style="margin-top: 30px;">
+            <a href="{{ url_for('login') }}" class="btn w-100" style="text-decoration: none;">Return to Login</a>
+        </div>
+        
+        <div style="margin-top: 15px;">
+             <p style="color: #666; font-size: 0.9rem;">Didn't receive the email? Check your spam folder.</p>
+        </div>
+    </div>
+{% endblock %}

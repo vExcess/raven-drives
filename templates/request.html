@@ -3,7 +3,7 @@
 {% block title %}Raven Drives - Request Ride{% endblock %}
 
 {% block content %}
-    <div class="centered-form-wrapper" style="max-width: 500px;">
+    <div class="centered-form-wrapper" style="width: fit-content; min-width: min(500px, 90vw); max-width: 95vw;">
         <h2 class="text-center w-100">Request a Ride</h2>
         <form action="{{ url_for('commision') }}" method="post">
             <div>

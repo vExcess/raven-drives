@@ -13,6 +13,9 @@ def run_publicly(app, port=5000):
     except Exception:
         local_ip = "127.0.0.1"
 
+    global ip
+    ip = local_ip
+
     print(f"Flask app running publicly on: http://{local_ip}:{port}")
     app.run(host='0.0.0.0', port=port)
 
