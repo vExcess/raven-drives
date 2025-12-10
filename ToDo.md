@@ -2,6 +2,7 @@
 List of what we need to do, who's doing it, and if it's done.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## Super Important 
     [x] Make To-Do List
 ## Semi - Important
@@ -9,6 +10,8 @@ List of what we need to do, who's doing it, and if it's done.
 ## Not Particularly Important  
     [ ] Placeholder   
 =======
+=======
+>>>>>>> 18ec4666592c0fc7565fcb78e74f371b47e24629
 ## Currently In Progress
     [ ]SQL and Data sanitization - Donald
 ## Important ToDos
@@ -21,4 +24,7 @@ List of what we need to do, who's doing it, and if it's done.
 ## Done
     [x] Make To-Do List
     
+<<<<<<< HEAD
 >>>>>>> refs/remotes/origin/main
+=======
+>>>>>>> 18ec4666592c0fc7565fcb78e74f371b47e24629
