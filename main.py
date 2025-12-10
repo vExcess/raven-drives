@@ -15,7 +15,7 @@ def inject_user():
 
 @app.route('/', methods=['GET'])
 def index():
-    return flask.render_template('index.html')
+    return flask.render_template('index.html', user_display_name=session.get('user_display_name'))
 
 @app.route('/login', defaults={'redirect': None}, methods=['GET', 'POST'])
 @app.route('/login/<redirect>', methods=['GET', 'POST'])
@@ -144,6 +144,41 @@ def view_offers():
 def view_requests():
     requests = helper.get_open_requests()
     return flask.render_template('view_requests.html', requests=requests)
+
+@app.route('/user_view')
+def user_view():
+    if not flask.session.get('user_display_name'):
+        return flask.redirect(flask.url_for('login', redirect='user_view'))
+    
+    display_name = flask.session.get('user_display_name')
+    offers = helper.get_user_offers(display_name)
+    requests = helper.get_user_requests(display_name)
+    
+    return flask.render_template('user_view.html', offers=offers, requests=requests)
+
+@app.route('/update_offer_status/<int:offer_id>/<status>')
+def update_offer_status(offer_id, status):
+    if not flask.session.get('user_display_name'):
+         return flask.redirect(flask.url_for('login'))
+
+    # Validate that the user owns the offer
+    if not helper.get_user_from_display_name(flask.session.get('user_display_name'))['email'] == helper.get_offer_from_id(offer_id)['email']:
+        return flask.redirect(flask.url_for('user_view'))
+    
+    helper.update_offer_status(offer_id, status)
+    return flask.redirect(flask.url_for('user_view'))
+
+@app.route('/update_request_status/<int:request_id>/<status>')
+def update_request_status(request_id, status):
+    if not flask.session.get('user_display_name'):
+         return flask.redirect(flask.url_for('login'))
+
+    # Validate that the user owns the request
+    if not helper.get_user_from_display_name(flask.session.get('user_display_name'))['email'] == helper.get_request_from_id(request_id)['email']:
+        return flask.redirect(flask.url_for('user_view'))
+    
+    helper.update_request_status(request_id, status)
+    return flask.redirect(flask.url_for('user_view'))
 
 if __name__ == '__main__':
 
