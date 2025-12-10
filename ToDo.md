@@ -12,4 +12,8 @@ List of what we need to do, who's doing it, and if it's done.
     [ ]Migrate to either MySQLi or SQLITE 
 ## Done
     [x] Make To-Do List
+
+
+
+    Test to see if git works
     
