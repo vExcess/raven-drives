@@ -9,6 +9,10 @@
     --border-radius: 4px;
 }
 
+*, *::before, *::after {
+box-sizing: border-box;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -55,7 +59,7 @@ a:hover {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 100px 20px 20px 20px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -216,7 +220,91 @@ input[type="submit"]:active {
     transition: transform 0.3s, border-color 0.3s;
 }
 
+
 .menu-card:hover {
     transform: translateY(-5px);
     border: 1px solid var(--racing-red);
 }
+
+/* Sidebar & Layout */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 250px;
+    background-color: #151515; /* Slightly lighter than dark-bg */
+    padding-top: 80px; /* Space for navbar */
+    display: flex;
+    flex-direction: column;
+    z-index: 99; /* Below navbar */
+    border-right: 1px solid #333;
+}
+
+.sidebar-link {
+    padding: 15px 25px;
+    color: #ccc;
+    font-size: 1.1rem;
+    border-left: 4px solid transparent;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    font-style: italic;
+}
+
+.sidebar-link:hover {
+    background-color: var(--input-bg);
+    color: white;
+    border-left: 4px solid var(--racing-red);
+}
+
+.content-wrapper {
+    margin-left: 250px;
+    padding-top: 80px; /* Navbar height + padding */
+    width: calc(100% - 250px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Listings */
+.listing-container {
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-bottom: 40px;
+}
+
+.listing-card {
+    background-color: var(--card-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    border-left: 5px solid var(--racing-red);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.listing-details h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+    border-bottom: none;
+    color: white;
+}
+
+.listing-meta {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+
+.listing-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--racing-red);
+    font-style: italic;
+}
+

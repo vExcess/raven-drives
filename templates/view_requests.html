@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Raven Drives - Open Requests{% endblock %}
+
+{% block content %}
+    <h1>Open Requests</h1>
+    <div class="listing-container">
+        {% for req in requests %}
+        <div class="listing-card">
+            <div class="listing-details">
+                <h3>{{ req['pickup_location'] }} &rarr; {{ req['dropoff_location'] }}</h3>
+                <div class="listing-meta">
+                    <strong>Pickup:</strong> {{ req['pickup_time'].replace('T', ' ') }}<br>
+                    {% if req['dropoff_time'] %}
+                    <strong>Dropoff:</strong> {{ req['dropoff_time'].replace('T', ' ') }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="listing-price">
+                ${{ req['price'] }}
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; color: #aaa; margin-top: 50px;">
+            <p>No open requests currently available.</p>
+            <a href="{{ url_for('commision') }}" class="btn mt-4">Request a Ride</a>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

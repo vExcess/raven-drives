@@ -22,12 +22,12 @@
         <div class="menu-card">
             <h3>View Offers</h3>
             <p>Browse current ride offers.</p>
-            <a href="#" class="btn" style="background-color: #333;">View Matches</a>
+            <a href="{{ url_for('view_offers') }}" class="btn">View Matches</a>
         </div>
         <div class="menu-card">
             <h3>View Requests</h3>
             <p>See who needs a ride.</p>
-            <a href="#" class="btn" style="background-color: #333;">View Matches</a>
+            <a href="{{ url_for('view_requests') }}" class="btn">View Matches</a>
         </div>
     </div>
 {% endblock %}
