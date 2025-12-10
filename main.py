@@ -87,12 +87,14 @@ def invalid_code():
 
 @app.route('/offer', methods=['GET', 'POST'])
 def offer():
-    if request.method == 'POST':
 
+    # check if the user is logged in
+    if not flask.session.get('user_display_name'):
+        return flask.redirect(flask.url_for('login', redirect='offer'))
+    else:
         display_name = flask.session.get('user_display_name')
-        # check if the user is logged in
-        if not display_name:
-            return flask.redirect(flask.url_for('login', redirect='offer'))
+    
+    if request.method == 'POST':
 
         pickup_location = request.form.get('pickup_location')
         dropoff_location = request.form.get('dropoff_location')
@@ -110,12 +112,14 @@ def offer():
 
 @app.route('/request', methods=['GET', 'POST'])
 def commision():
-    if request.method == 'POST':
-
+    
+    # check if the user is logged in
+    if not flask.session.get('user_display_name'):
+        return flask.redirect(flask.url_for('login', redirect='request'))
+    else:
         display_name = flask.session.get('user_display_name')
-        # check if the user is logged in
-        if not display_name:
-            return flask.redirect(flask.url_for('login', redirect='request'))
+    
+    if request.method == 'POST':
 
         pickup_location = request.form.get('pickup_location')
         dropoff_location = request.form.get('dropoff_location')
