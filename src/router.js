@@ -14,25 +14,73 @@ function renderEJS(template, data) {
     return ejs.renderFile(`./src/templates/${template}.ejs`, data);
 }
 
+async function renderPage(page, title, data) {
+    return renderEJS("base", {
+        ...data,
+        title: `Raven Drives - ${title}`,
+        content: await renderEJS(page, data)
+    })
+}
+
 const routeTree = {
-    "/": async (path, out, data) => {    
-        // main path
-        const rendered = await renderEJS("base", {
-            ...data,
-            title: "Raven Drives - Home",
-            content: await renderEJS("index", {
-                ...data
-            })
-        });
+    "/ping": async (path, out, data) => {
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write("Pong!");
+    },
+    "/": async (path, out, data) => {
+        const rendered = await renderPage("index", "Home", data);
         
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
-    "/ping": async (path, out, data) => {
-        // main path
+    "/login": async (path, out, data) => {
+        const rendered = await renderPage("login", "Login", data);
+        
         out.writeHead(200, { 'Content-Type': 'text/html' });
-        out.write("Pong!");
+        out.write(rendered);
     },
+    "/signup": async (path, out, data) => {
+        const rendered = await renderPage("signup", "Sign Up", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    "/confirmation_sent": async (path, out, data) => {
+        const rendered = await renderPage("confirmation_sent", "Check Your Inbox", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    "/invalid_code": async (path, out, data) => {
+        const rendered = await renderPage("invalid_code", "Invalid Code", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    "/offer": async (path, out, data) => {
+        const rendered = await renderPage("offer", "Offer Ride", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    "/request": async (path, out, data) => {
+        const rendered = await renderPage("request", "Request Ride", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    "/confirm_email": async (path, out, data) => {
+        const rendered = await renderPage("success", "Green Light", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    // "/user_view": async (path, out, data) => {
+    //     const rendered = await renderPage("user_view", "My Dashboard", data);
+        
+    //     out.writeHead(200, { 'Content-Type': 'text/html' });
+    //     out.write(rendered);
+    // },
     "/static/": async (path, out, data) => {
         // stop browsers from complaining about CORS issues
         out.setHeader("Access-Control-Allow-Origin", "*");
