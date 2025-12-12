@@ -4,7 +4,7 @@
 
 {% block content %}
     <div style="text-align: center; margin-bottom: 40px;">
-        <h1>Dashboard</h1>
+        <h1>Welcome{{ ', ' + user_display_name if user_display_name else '' }}</h1>
         <p style="color: #888;">Select an option to get started</p>
     </div>
 

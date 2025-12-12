@@ -12,6 +12,30 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def get_user_offers(display_name):
+    conn = get_db_connection()
+    offers = conn.execute('SELECT * FROM offers WHERE display_name = ? ORDER BY pickup_time DESC', (display_name,)).fetchall()
+    conn.close()
+    return offers
+
+def get_user_requests(display_name):
+    conn = get_db_connection()
+    requests = conn.execute('SELECT * FROM requests WHERE display_name = ? ORDER BY pickup_time DESC', (display_name,)).fetchall()
+    conn.close()
+    return requests
+
+def update_offer_status(offer_id, status):
+    conn = get_db_connection()
+    conn.execute('UPDATE offers SET status = ? WHERE id = ?', (status, offer_id))
+    conn.commit()
+    conn.close()
+
+def update_request_status(request_id, status):
+    conn = get_db_connection()
+    conn.execute('UPDATE requests SET status = ? WHERE id = ?', (status, request_id))
+    conn.commit()
+    conn.close()
+
 def init_db():
     conn = get_db_connection()
     conn.execute('''

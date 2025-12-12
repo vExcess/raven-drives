@@ -8,15 +8,51 @@
 */
 
 const fs = require("node:fs");
+const Path = require("node:path");
 
 // the only valid option is { elevatedPermissions: true }
 // yes, it could have been made a simple boolean argument
 // but I made it so you must type out the whole "elevatedPermissions"
 // so that you are sure you want to be using elevated permissions
 function readFileSync(filePath, options) {
-    const absProjectPath = path.normalize(process.cwd());
+    const elevatedPermissions = options?.elevatedPermissions === true ? true : false;
 
-    const absFilePath = path.normalize(path.resolve(filePath));
+    const absProjectPath = Path.normalize(process.cwd() + "/");
 
-    // it's late at night, my eyes cannot focus on the text, I'll continue in the morning
+    const absFilePath = Path.normalize(absProjectPath + (filePath));
+
+    const whitelist = [
+        "src/static/",
+        "src/templates/"
+    ];
+
+    if (absFilePath.startsWith(absProjectPath)) {
+        let approved = false;
+        if (elevatedPermissions) {
+            approved = true;
+        } else {
+            const subFilePath = absFilePath.slice(absProjectPath.length);
+            for (const pattern of whitelist) {
+                if (subFilePath.startsWith(pattern)) {
+                    approved = true;
+                    break;
+                }
+            }
+        }
+        
+        if (approved) {
+            if (fs.existsSync(absFilePath)) {
+                return fs.readFileSync(absFilePath);
+            }
+            return null;
+        }
+        
+        throw `Permission denied while reading ${absFilePath}`;
+    }
+
+    throw "Refused to read file outside of project directory";
 }
+
+module.exports = {
+    readFileSync
+};
