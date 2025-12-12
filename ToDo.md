@@ -13,7 +13,8 @@ List of what we need to do, who's doing it, and if it's done.
 =======
 >>>>>>> 18ec4666592c0fc7565fcb78e74f371b47e24629
 ## Currently In Progress
-    [ ]SQL and Data sanitization - Donald
+    [ ]SQL and Data sanitization 
+
 ## Important ToDos
     [ ]Add a page for users to see their open requests/offers and edit them or mark them as claimed/full
     [ ]Auto move claimed/full/expired requests/offers to a database for archival and analysis
