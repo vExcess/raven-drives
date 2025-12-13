@@ -2,6 +2,15 @@ const { MongoClient } = require("mongodb");
 
 const Mailjet = require('node-mailjet');
 
+const cryptography = require("./cryptography");
+
+const { nowSeconds } = require("./utils");
+
+const OPEN = 0;
+const BANNED = -1;
+const UNVERIFIED = 0;
+const VERIFIED = 1;
+
 let myMongo = null;
 
 // will hold the database connection
@@ -83,24 +92,22 @@ function addOffer(requestId, status) {
 
 function getOpenOffers() {
     // consider using strings intstead of integers
-    const OPEN = 0;
     return offers
         .find({ status: OPEN })
         .sort({ pickupTime: 1 });
 }
 
-function addUser() {
+function addUser(data, authToken) {
     return users.insertOne({
-        // id: int,
-        // name: string,
-        // email: string,
-        // password_hash: string,
-        // session_tokens: []string,
-        // // -1=suspended, 0=unverified, 1=verified
-        // status: int,
-        // rating: double,
-        // payment_types: []string,
-        // timestamp: int,
+        id: cryptography.uuid(),
+        name: data.name,
+        email: data.email,
+        password_hash: cryptography.sha256(data.password),
+        session_tokens: [authToken],
+        status: UNVERIFIED,
+        rating: 0,
+        payment_types: [],
+        timestamp: nowSeconds()
     });
 }
 
@@ -176,4 +183,5 @@ function sendUserConfirmationEmail(email, code, domain) {
 
 module.exports = {
     connect,
+    addUser
 };

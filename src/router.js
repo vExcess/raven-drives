@@ -1,14 +1,30 @@
+// HTML templating
 const ejs = require('ejs');
 
+// hardened file system
 const fs = require("./hardened-fs");
 
-function urlFileExt(url) {
-    let idx = url.lastIndexOf(".");
-    if (idx == -1) {
-        return "";
-    }
-    return url.slice(idx + 1);
-}
+// JSON validator
+const Ajv = require("ajv");
+
+const dbIterface = require("./db-interface");
+
+const cryptography = require("./cryptography");
+
+const { nowSeconds, parseJSON, urlFileExt, urlParametersToJson } = require("./utils");
+
+const ajv = new Ajv({ allErrors: false });
+
+const validateUserSignup = ajv.compile({
+    type: "object",
+    properties: {
+        name: { type: "string" }, 
+        email: { type: "string" },
+        password: { type: "string" }, 
+    },
+    required: ["name", "email", "password"],
+    additionalProperties: false
+});
 
 function renderEJS(template, data) {
     return ejs.renderFile(`./src/templates/${template}.ejs`, data);
@@ -75,6 +91,12 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
+    "/authenticate?": async (path, out, data) => {
+        const rendered = await renderPage("authenticate", "Authenticating", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
     // "/user_view": async (path, out, data) => {
     //     const rendered = await renderPage("user_view", "My Dashboard", data);
         
@@ -120,6 +142,42 @@ const routeTree = {
         } else {
             out.writeHead(404);
             out.write("404 Not Found");
+        }
+    },
+    "/API/": {
+        ":ACTION": (path, out, data) => {
+            // this function is a preprocessor for API calls before the endpoint function is called
+        },
+        ":POST:": {
+            "signup": async (path, out, data) => {
+                let json = urlParametersToJson(data.postBody);
+                console.log(json);
+
+                let validationErr = null;
+                if (!validateUserSignup(json)) {
+                    validationErr = JSON.stringify(validateUserSignup.errors);
+                }
+                
+                if (!/^[a-zA-Z0-9\. ]{1,}/.test(json.name)) {
+                    validationErr = "invalid name";
+                }
+                
+                if (!/^[a-zA-Z0-9\.]{6,}@(ravens\.benedictine\.edu|benedictine\.edu)/.test(json.email)) {
+                    validationErr = "invalid email";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const authToken = `${nowSeconds()}-${cryptography.uuid()}`;
+                console.log(await dbIterface.addUser(json, authToken));
+
+                out.writeHead(302, { "Location": "/authenticate?token="+authToken });
+                out.write("Authenticating...");
+            },
         }
     }
 };

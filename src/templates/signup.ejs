@@ -1,6 +1,6 @@
 <div class="centered-form-wrapper">
     <h2 class="text-center w-100">Join the Crew</h2>
-    <form action="" method="post">
+    <form action="/API/signup" method="POST">
         <div>
             <label>BC Email</label>
             <input type="email" name="email" placeholder="user@ravens.benedictine.edu" required autocomplete="email" value="<%= userData?.username ?? '' %>">
@@ -11,7 +11,7 @@
         </div>
         <div>
             <label>Display Name</label>
-            <input type="text" name="display_name" placeholder="Your Name" required autocomplete="name">
+            <input type="text" name="name" placeholder="Your Name" required autocomplete="name">
         </div>
         <div style="text-align: center; margin-top: 10px;">
             <input type="submit" value="Sign Up" class="btn w-100">

@@ -10,13 +10,13 @@ let userCache = {};
 function readPostBodyAsString(request) {
     return new Promise((resolve, reject) => {
         let data = "";
-        req.on('data', (chunk) => {
+        request.on('data', (chunk) => {
             data += chunk;
         });
-        req.on('end', () => {
+        request.on('end', () => {
             resolve(data);
         });
-        req.on('error', (err) => {
+        request.on('error', (err) => {
             reject(err);
         });
     });
@@ -50,10 +50,7 @@ async function useTree(path, tree, data, response) {
             else if (path.startsWith(key) && (key[key.length - 1] === "/" || key[key.length - 1] === "?") && key !== "/") {
                 if (key === "/API/") {
                     if (typeof tree[key][":ACTION"] === "function") {
-                        let newData = await tree[key][":ACTION"](path, response, data);
-                        for (const prop in newData) {
-                            data[prop] = newData[prop];
-                        }
+                        await tree[key][":ACTION"](path, response, data);
                     }
                     let request = data["request"];
                     switch (request.method) {
@@ -91,10 +88,7 @@ async function useTree(path, tree, data, response) {
             }
             // perform route action
             else if (key === ":ACTION") {
-                let newData = await tree[key](path, response, data);
-                for (const prop in newData) {
-                    data[prop] = newData[prop];
-                }
+                await tree[key](path, response, data);
             }
         }
     } catch (err) {
@@ -151,11 +145,15 @@ async function requestHandler(request, response) {
     }
 }
 
+const mailer = require("./mailer");
+
 // If run with Bun we don't need a "main" function, but with NodeJS we do.
 (async function main() {
     require("./secrets-loader").loadSecrets();
 
     await dbIterface.connect();
+
+    mailer.init();
 
     let server;
     let protocol;

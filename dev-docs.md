@@ -78,7 +78,7 @@ Get Git from [https://git-scm.com/install/](https://git-scm.com/install/)
 
 ## Setup Database
 ### Installation
-The code snippets here assume a x64 Ubuntu 24.04 machine. From [https://www.mongodb.com/docs/manual/administration/install-community/](https://www.mongodb.com/docs/manual/administration/install-community/)
+The code snippets here assume a x64 Ubuntu 24.04 (derivatives of Ubuntu work with this too) machine. From [https://www.mongodb.com/docs/manual/administration/install-community/](https://www.mongodb.com/docs/manual/administration/install-community/)
 
 ```sh
 sudo apt-get install gnupg curl
@@ -159,7 +159,7 @@ Exit the mongo shell
 exit
 ```
 
-Edit `/etc/mongod.conf` to have (You must open the file with root priveleges)
+Edit `/etc/mongod.conf` to have (You must open the file with sudo priveleges)
 ```yaml
 security:
   authorization: enabled
