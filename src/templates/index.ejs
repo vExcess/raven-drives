@@ -1,5 +1,5 @@
 <div style="text-align: center; margin-bottom: 40px;">
-    <h1>Welcome<%= `, ${userData?.displayName ?? ""}` %></h1>
+    <h1>Welcome<%= userData?.displayName ? `,${userData.displayName}` : "" %></h1>
     <p style="color: #888;">Select an option to get started</p>
 </div>
 
