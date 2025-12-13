@@ -3,6 +3,8 @@ const http = require("node:http");
 const https = require("node:https");
 const Path = require("node:path");
 
+const dbIterface = require("./db-interface");
+
 let userCache = {};
 
 function readPostBodyAsString(request) {
@@ -149,9 +151,11 @@ async function requestHandler(request, response) {
     }
 }
 
-// JS doesn't need a main, but it makes clear where the program's entrypoint is
-(function main() {
+// If run with Bun we don't need a "main" function, but with NodeJS we do.
+(async function main() {
     require("./secrets-loader").loadSecrets();
+
+    await dbIterface.connect();
 
     let server;
     let protocol;
