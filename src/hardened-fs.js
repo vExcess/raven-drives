@@ -3,7 +3,7 @@
     However, in the case that it's not, as a failsafe I create
     a hardened version of the file system API. With my API, even
     if an attacker gets the ability to try and access arbitrary files,
-    my API will block access to all files not explicity whitelisted
+    my API will block access to all files not explicitly whitelisted
     as safe for public access.
 */
 

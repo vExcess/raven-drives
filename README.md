@@ -21,23 +21,7 @@ Perhaps slightly confusing, but we are lacking a better name. If you have a bett
 Social networks only work well when they have a decent amount of members. So don't leave; invite your friends instead! We can be better than Raven Rides as long as we can get more people.
 
 ## Privacy
-This project was created by people that use privacy respecting software alternatives such as Linux instead of Windows or Mac, and LineageOS instead of Android or iOS. We probably care more about your privacy than you do. We will never share your data with third parties without your consent. Our entire project's code is open source so you can read the code and determine whether it is trustworthy for yourself. Lastly, Raven Drives is only useable by persons with a @ravens... email address. This prevents outsiders from knowing your whereabouts.
+This project was created by people that use privacy respecting software alternatives such as Linux instead of Windows or Mac, and LineageOS instead of Android or iOS. We probably care more about your privacy than you do. We will never share your data with third parties without your consent. Our entire project's code is open source so you can read the code and determine whether it is trustworthy for yourself. Lastly, Raven Drives is only useable by persons with a @ravens.benedictine.edu email address. This prevents outsiders from knowing your whereabouts.
 
 ## Development
-
-#### Install Node JS
-Get Node JS from [https://nodejs.org/en/download](https://nodejs.org/en/download)
-
-#### Install Git
-Get Git from [https://git-scm.com/install/](https://git-scm.com/install/)
-
-#### Clone and enter Repository
-`git clone https://github.com/vExcess/raven-drives.git`
-`cd raven-drives`
-
-#### Install dependencies
-`npm install`
-
-#### Start server
-`npm start`
-
+Contributors, see the dev-docs.md file.
