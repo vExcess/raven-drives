@@ -16,6 +16,35 @@
                 <a href="login" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
             <% } %>
         </div>
+
+        <div>
+            <% if(userData?.displayName){ %>
+                <div class = "dropdown">
+                    <button class="dropbtn">               
+                        <span class="display_name" id="user_display_name"><%= userData.displayName %></span>
+                    </button>
+                    <div class="dropdown-content">
+                        <a href="account">Account</a>
+                        <a href="rides">Rides</a>
+                        <a href="offers">Offers</a>
+                        <a href="requests">Requests</a>
+                        <a href="help">Help</a> 
+                    </div>
+                </div>  
+            <% } else { %>
+                <div class = "dropdown">
+                    <button class  = "dropbtn">
+                        <a href="login" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Dashboard</a>
+                    </button>
+                    <div class ="dropdown-content">
+                        <a href = "login"> Login</a>
+                        <a href = "createaccount">Create an Account</a> 
+                    </div>
+            </div>
+            <% } %> 
+            
+        </div>
+
     </div>
 
     <div class="container">
