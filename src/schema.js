@@ -6,6 +6,7 @@ users {
     name: string,
     email: string,
     password_hash: string,
+    salt: long,
     session_tokens: []string,
     // -1=suspended, 0=unverified, 1=verified
     status: int,

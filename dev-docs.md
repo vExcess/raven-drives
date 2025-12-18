@@ -12,6 +12,7 @@ users {
     name: string,
     email: string,
     password_hash: string,
+    salt: long,
     session_tokens: []string,
     // -1=suspended, 0=unverified, 1=verified
     status: int,
@@ -74,6 +75,9 @@ Get Git from [https://git-scm.com/install/](https://git-scm.com/install/)
 
 **Install dependencies**  
 `npm install`
+
+**Create secrets.env file**  
+Create a copy of `demo-secrets.env` called `secrets.env` and fill it out with your own data.
 
 **Start server**  
 `npm start`

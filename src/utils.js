@@ -1,5 +1,10 @@
+
 function nowSeconds() {
-    return Date.now() / 1000;
+    return Math.round(Date.now() / 1000);
+}
+
+function secondsFromToken(token) {
+    return Number(token.split("-")[0]);
 }
 
 function parseJSON(str) {
@@ -31,6 +36,7 @@ function urlParametersToJson(urlParamstring) {
 
 module.exports = {
     nowSeconds,
+    secondsFromToken,
     parseJSON,
     urlFileExt,
     urlParametersToJson

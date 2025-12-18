@@ -1,6 +1,15 @@
+<style>
+    #auth-error-message {
+        color: red;
+        padding: 8px;
+        margin-bottom: 4px;
+        font-size: 1.2em;
+    }
+</style>
+
 <div class="centered-form-wrapper">
     <h2 class="text-center w-100">Login</h2>
-    <form action="" method="post">
+    <form id="login" action="/API/login" method="post">
         <div>
             <label for="email">BC Email</label>
             <input type="email" name="email" id="email" placeholder="user@ravens.benedictine.edu" required autocomplete="email">
@@ -14,6 +23,54 @@
         </div>
     </form>
     <div style="margin-top: 20px; text-align: center; font-size: 0.9rem;">
+        <div id="auth-error-message"></div>
         <p style="color: #666;">Don't have an account? <a href="signup">Create one</a></p>
     </div>
+
+    <script>
+// do auth in JS so we don't have to do a page reload every submission
+let loginForm = document.getElementById("login");
+let errorEl = document.getElementById("auth-error-message");
+loginForm.addEventListener("submit", e => {
+    e.preventDefault(); // prevent the page from reloading
+
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+
+    fetch("/API/login", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            email,
+            password
+        })
+    }).then(async (res) => {
+        if (res.status !== 200) {
+            return Promise.resolve(`AuthError: ${await res.text()}`);
+        }
+        return res.text();
+    }).then(res => {
+        if (res.startsWith("AuthError: ")) {
+            const errorMessage = res.slice("AuthError: ".length);
+            
+            if (errorMessage.startsWith("[")) {
+                // is a validator error
+                const parsed = JSON.parse(errorMessage)[0];
+                errorEl.innerText = parsed.instancePath.slice(1) + " " + parsed.message;
+            } else {
+                // is a custom error
+                errorEl.innerText = errorMessage;
+            }
+        } else {
+            // store auth cookie and redirect to home
+            const token = res;
+            console.log(res);
+            document.cookie = `token=${token}; max-age=${60*60*24*90}; Secure; path=/`;
+            // window.location.href = "/";
+        }
+    })
+});
+    </script>
 </div>

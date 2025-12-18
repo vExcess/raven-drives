@@ -14,7 +14,7 @@ const Path = require("node:path");
 // yes, it could have been made a simple boolean argument
 // but I made it so you must type out the whole "elevatedPermissions"
 // so that you are sure you want to be using elevated permissions
-function readFileSync(filePath, options) {
+function hasAccess(filePath, options) {
     const elevatedPermissions = options?.elevatedPermissions === true ? true : false;
 
     const absProjectPath = Path.normalize(process.cwd() + "/");
@@ -40,19 +40,34 @@ function readFileSync(filePath, options) {
             }
         }
         
-        if (approved) {
-            if (fs.existsSync(absFilePath)) {
-                return fs.readFileSync(absFilePath);
-            }
-            return null;
-        }
-        
-        throw `Permission denied while reading ${absFilePath}`;
+        return { approved, absFilePath };
     }
 
-    throw "Refused to read file outside of project directory";
+    return false;
+}
+
+function readFileSync(filePath, options) {
+    const { approved, absFilePath } = hasAccess(filePath, options);
+    if (approved) {
+        if (fs.existsSync(absFilePath)) {
+            return fs.readFileSync(absFilePath);
+        }
+        return null;
+    } else {
+        throw `Permission denied while reading ${filePath}`;
+    }
+}
+
+function existsSync(filePath, options) {
+    const { approved, absFilePath } = hasAccess(filePath, options);
+    if (approved) {
+        return fs.existsSync(absFilePath);
+    } else {
+        throw `Permission denied while reading ${filePath}`;
+    }
 }
 
 module.exports = {
-    readFileSync
+    readFileSync,
+    existsSync
 };

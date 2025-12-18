@@ -11,6 +11,11 @@ const fs = require("./hardened-fs");
 
 function loadSecrets() {
     globalThis.SECRETS = {};
+
+    if (!fs.existsSync("./secrets.env", {elevatedPermissions: true})) {
+        throw "secrets.env not found. please create a copy of demo-secrets.env and fill it out with your own data";
+    }
+
     fs.readFileSync("./secrets.env", {elevatedPermissions: true})
         .toString()
         .split("\n")

@@ -4,27 +4,13 @@ const ejs = require('ejs');
 // hardened file system
 const fs = require("./hardened-fs");
 
-// JSON validator
-const Ajv = require("ajv");
-
 const dbIterface = require("./db-interface");
 
 const cryptography = require("./cryptography");
 
 const { nowSeconds, parseJSON, urlFileExt, urlParametersToJson } = require("./utils");
 
-const ajv = new Ajv({ allErrors: false });
-
-const validateUserSignup = ajv.compile({
-    type: "object",
-    properties: {
-        name: { type: "string" }, 
-        email: { type: "string" },
-        password: { type: "string" }, 
-    },
-    required: ["name", "email", "password"],
-    additionalProperties: false
-});
+const validator = require("./validator");
 
 function renderEJS(template, data) {
     return ejs.renderFile(`./src/templates/${template}.ejs`, data);
@@ -91,12 +77,6 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
-    "/authenticate?": async (path, out, data) => {
-        const rendered = await renderPage("authenticate", "Authenticating", data);
-        
-        out.writeHead(200, { 'Content-Type': 'text/html' });
-        out.write(rendered);
-    },
     // "/user_view": async (path, out, data) => {
     //     const rendered = await renderPage("user_view", "My Dashboard", data);
         
@@ -151,19 +131,15 @@ const routeTree = {
         ":POST:": {
             "signup": async (path, out, data) => {
                 let json = urlParametersToJson(data.postBody);
-                console.log(json);
 
                 let validationErr = null;
-                if (!validateUserSignup(json)) {
-                    validationErr = JSON.stringify(validateUserSignup.errors);
+                if (!validator.userSignup(json)) {
+                    validationErr = JSON.stringify(validator.userSignup.errors);
                 }
-                
-                if (!/^[a-zA-Z0-9\. ]{1,}/.test(json.name)) {
-                    validationErr = "invalid name";
-                }
-                
-                if (!/^[a-zA-Z0-9\.]{6,}@(ravens\.benedictine\.edu|benedictine\.edu)/.test(json.email)) {
-                    validationErr = "invalid email";
+
+                const user = dbIterface.getUserFromEmail(json.email);
+                if (user && user.email === json.email) {
+                    validationErr = "User with that email already exists";
                 }
 
                 if (validationErr !== null) {
@@ -175,8 +151,28 @@ const routeTree = {
                 const authToken = `${nowSeconds()}-${cryptography.uuid()}`;
                 console.log(await dbIterface.addUser(json, authToken));
 
-                out.writeHead(302, { "Location": "/authenticate?token="+authToken });
-                out.write("Authenticating...");
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write(authToken);
+            },
+            "login": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+
+                let validationErr = null;
+                if (!validator.userLogin(json)) {
+                    validationErr = JSON.stringify(validator.userLogin.errors);
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbIterface.authenticateUser(json.email, json.password);
+
+                // res may be an auth token or an error message
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write(res);
             },
         }
     }

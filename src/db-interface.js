@@ -4,7 +4,7 @@ const Mailjet = require('node-mailjet');
 
 const cryptography = require("./cryptography");
 
-const { nowSeconds } = require("./utils");
+const { nowSeconds, secondsFromToken } = require("./utils");
 
 const schema = require("./schema");
 
@@ -129,12 +129,17 @@ function addUser(data, authToken) {
         name: data.name,
         email: data.email,
         password_hash: cryptography.sha256(data.password),
+        salt: cryptography.salt(),
         session_tokens: [authToken],
         status: UNVERIFIED,
         rating: 0,
         payment_types: [],
         timestamp: nowSeconds()
     });
+}
+
+function saveUserToken(userid) {
+
 }
 
 function confirmUser() {
@@ -145,8 +150,42 @@ function getUserFromEmail(email) {
     return users.findOne({ email });
 }
 
-function checkPassword(email, password) {
-    // TODO: implement
+/*
+    checks if email and password are correct
+    if credentials are valid, returns a new auth token after saving it to the database
+    if credentials are invalid, returns false
+*/
+async function authenticateUser(email, password) {
+    const user = await getUserFromEmail(email);
+    if (user) {
+        const passwordHash = cryptography.sha256(user.salt + password);
+        // check that password is correct
+        if (cryptography.constTimeEquals(user.password_hash, passwordHash)) {
+            // generate new auth token
+            const authToken = `${nowSeconds()}-${cryptography.uuid()}`;
+            
+            // remove tokens that are over 90 days old
+            const currSeconds = nowSeconds();
+            const TOKEN_DAYS_LIFESPAN = 90;
+            user.session_tokens = user.session_tokens.filter(tok => {
+                return currSeconds - secondsFromToken(tok) > 60*60*24*TOKEN_DAYS_LIFESPAN
+            });
+
+            // add new auth save
+            user.session_tokens.push(authToken);
+
+            // write changes to database
+            await users.updateOne({ id: user.id }, {$set: {
+                session_tokens: user.session_tokens
+            }});
+
+            // return new auth token to be sent to user
+            return authToken;
+        } else {
+            return "AuthError: Password is incorrect";
+        }
+    }
+    return "AuthError: No user with this email exists";
 }
 
 let mailjet = null;
@@ -209,5 +248,7 @@ function sendUserConfirmationEmail(email, code, domain) {
 
 module.exports = {
     connect,
-    addUser
+    addUser,
+    authenticateUser,
+    getUserFromEmail
 };

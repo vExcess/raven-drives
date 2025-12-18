@@ -171,4 +171,4 @@ const mailer = require("./mailer");
     server.listen(SECRETS.PORT, () => {
         console.log(`Server online at ${protocol}://127.0.0.1:${SECRETS.PORT}`);
     });
-})();
+})().catch(console.error);
