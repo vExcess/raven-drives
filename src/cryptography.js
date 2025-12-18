@@ -22,6 +22,7 @@ function randomDigits(length) {
     return out;
 }
 
+// returns UUID as base64 string
 function uuid() {
     let randVals = new Uint8Array(128 / 8);
     crypto.getRandomValues(randVals);

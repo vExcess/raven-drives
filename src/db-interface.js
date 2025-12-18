@@ -6,6 +6,8 @@ const cryptography = require("./cryptography");
 
 const { nowSeconds } = require("./utils");
 
+const schema = require("./schema");
+
 const OPEN = 0;
 const BANNED = -1;
 const UNVERIFIED = 0;
@@ -21,6 +23,7 @@ let users = null,
     offers = null,
     requests = null,
     reviews = null;
+
 
 async function connect() {
     // setup client
@@ -39,14 +42,37 @@ async function connect() {
     await myMongo.connect();
 
     // get the stuff we need
-    db = myMongo.db("ravenDrives");
+    db = myMongo.db("ravenDrives");        
 
     users = db.collection("users");
     offers = db.collection("offers");
     requests = db.collection("requests");
     reviews = db.collection("reviews");
 
-    // TODO: setup schema
+    const preExistingCollections = await db.listCollections().toArray();
+    function collectionExists(name) {
+        for (let i = 0; i < preExistingCollections.length; i++) {
+            if (preExistingCollections[i].name === name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // setup database schema validation
+    await Promise.all(["users", "offers", "requests", "reviews"].map(collectionName => {
+        const validator = schema.mongodbValidatorFromParsed(schema.parsedSchemas[collectionName]);
+        if (collectionExists(collectionName)) {
+            return db.command({
+                collMod: collectionName,
+                validator
+            });
+        } else {
+            return db.createCollection(collectionName, {
+                validator
+            });
+        }
+    }));
 
     console.log("MongoDB connection established.");
 }

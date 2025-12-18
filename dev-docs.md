@@ -1,12 +1,14 @@
 # Developer Documentation
 
 ## Database Schema
+See BSON types
+[https://www.mongodb.com/docs/manual/reference/bson-types/](https://www.mongodb.com/docs/manual/reference/bson-types/)
 ```ts
 // Times stored as seconds since unix epoch
 // Types are not nullable unless stated otherwise
 
 users {
-    id: int,
+    id: string,
     name: string,
     email: string,
     password_hash: string,
@@ -19,7 +21,7 @@ users {
 }
 
 reviews {
-    id: int,
+    id: string,
     creator: int,
     about: int,
     rating: int,
@@ -28,7 +30,7 @@ reviews {
 }
 
 offers {
-    id: int,
+    id: string,
     creator: int,
     pickupLocation: string,
     dropoffLocation: string,
@@ -45,7 +47,7 @@ offers {
 }
 
 requests {
-    id: int,
+    id: string,
     creator: int,
     luggage: string,
     notes: string,
@@ -54,7 +56,7 @@ requests {
     pickup_timerange_start: int,
     pickup_timerange_end: int,
     // 0=open
-    status: INT,
+    status: int,
     timestamp: int,
 }
 ```
@@ -79,6 +81,8 @@ Get Git from [https://git-scm.com/install/](https://git-scm.com/install/)
 ## Setup Database
 ### Installation
 The code snippets here assume a x64 Ubuntu 24.04 (derivatives of Ubuntu work with this too) machine. From [https://www.mongodb.com/docs/manual/administration/install-community/](https://www.mongodb.com/docs/manual/administration/install-community/)
+
+Note: If unsure about your Ubuntu base version, run `cat /etc/os-release` to get OS info and check for `UBUNTU_CODENAME=noble` or `Ubuntu 24.04`. The Ubuntu 24.04 installation instructions will not work on other systems.
 
 ```sh
 sudo apt-get install gnupg curl
