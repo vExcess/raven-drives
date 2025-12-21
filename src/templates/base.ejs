@@ -5,33 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link rel="stylesheet" href="static/styles.css">
+
+    <style>
+        #user_display_name {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div class="navbar">
         <a href="/" class="brand">RAVEN<span>DRIVES</span></a>
         <div>
-            <% if (userData?.displayName) { %>
+            <% if (userData === null) { %>
+                <a href="login" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
+                <span style="display: inline-block; width: 4px;"><!-- spacer --></span>
+                <a href="signup" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Create Account</a>
+            <% } else if (!url.startsWith("/login") && !url.startsWith("/signup")) { %>
                 <div class = "dropdown">
-                    <span class="display_name dropbtn" id="user_display_name"><%= userData.displayName %></span>
+                    <span class="display_name dropbtn" id="user_display_name"><%= userData?.name %></span>
                     <div class="dropdown-content">
                         <a href="account">Account</a>
                         <a href="rides">Rides</a>
                         <a href="offers">Offers</a>
                         <a href="requests">Requests</a>
-                        <a href="help">Help</a> 
+                        <a href="help">Help</a>
+                        <a href="javascript:void(0);" onclick="logout()">Log out</a> 
                     </div>
                 </div>
-            <% } else if (!url.startsWith("/login") && !url.startsWith("/signup")) { %>
-                <a href="login" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
-                <span style="display: inline-block; width: 4px;"><!-- spacer --></span>
-                <a href="signup" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Create Account</a>
             <% } %>
         </div>
     </div>
 
     <div class="container">
-        <%- content %>
+        <% if (userData?.status === 0 && !url.startsWith("/confirm_email")) { %>
+            <div class="centered-form-wrapper">
+                <h2 class="text-center w-100">You must verify your email address before you can use the service</h2>
+                <a href="confirm_email" class="btn w-100" style="padding: 8px 16px; font-size: 0.8rem;">Verify</a>
+            </div>
+        <% } else { %>
+            <%- content %>
+        <% } %>
     </div>
+
+    <%- userData !== null ? "<div id='loggedIn' style='display: none;'></div>" : "" %>
+
+    <script>
+const loggedIn = !!document.getElementById("loggedIn");
+
+function parseCookies(cookies) {
+    return Object.fromEntries(cookies.split("; ").map(s => {
+        var e = s.indexOf("=");
+        return [s.slice(0, e), s.slice(e + 1, s.length)];
+    }));
+}
+
+function deleteAuthToken() {
+    document.cookie = 'token=; max-age=-1000; Secure; path=/';
+}
+
+if (!loggedIn && parseCookies(document.cookie ?? "")) {
+    // the user auth token is invalid so delete it
+    deleteAuthToken();
+}
+
+function logout() {
+    fetch("/API/logout", {
+        method: "POST",
+        body: ""
+    }).then(async (res) => {
+        if (res.status !== 200) {
+            return Promise.resolve(`LogoutError: ${await res.text()}`);
+        }
+        return res.text();
+    }).then(res => {
+        if (res.startsWith("LogoutError: ")) {
+            alert(res);
+        } else {
+            // delete auth cookie
+            deleteAuthToken();
+            window.location.reload();
+        }
+    })
+}
+    </script>
 
 </body>
 </html>

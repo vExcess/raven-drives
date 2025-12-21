@@ -1,0 +1,102 @@
+<script>
+    function urlParametersToJson(urlParamstring) {
+        const json = {};
+        try {
+            const entries = new URLSearchParams(urlParamstring.slice(Math.max(0, urlParamstring.indexOf("?")))).entries();
+            for (const [key, value] of entries) {
+                json[key] = value;
+            }
+        } catch (e) {}
+        return json;
+    }
+    
+    function submitCode(option) {
+        let loading = document.getElementById("loading");
+        let errorEl = document.getElementById("form-error-message");
+
+        let code = document.getElementById("code");
+        if (!code) {
+            code = urlParametersToJson(window.location.search).code;
+        } else {
+            code = code.value;
+        }
+
+        fetch("/API/verify_code", {
+            method: "POST",
+            body: code
+        }).then(async (res) => {
+            if (res.status !== 200) {
+                return Promise.resolve(`VerifyError: ${await res.text()}`);
+            }
+            return res.text();
+        }).then(res => {
+            if (res.startsWith("VerifyError: ")) {
+                if (option !== "HIDE_ERRORS") {
+                    const errorMessage = res.slice("VerifyError: ".length);
+                    errorEl.innerText = errorMessage;
+                    loading.style.display = "none";
+                }
+                if (option === "SHOW_MANUAL_BUTTON") {
+                    errorEl.innerHTML += `<br><br><a href="confirm_email" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Enter Code Manually</a>`;
+                }
+            } else {
+                window.location.reload();
+            }
+        })
+    }
+</script>
+
+<div class="centered-form-wrapper" style="text-align: center;">
+    <% if (code !== undefined && userData?.status === 0) { %>
+        <h2 class="text-center w-100" style="color: var(--racing-red);">Confirming Email</h2>
+        <img id="loading" src="static/loading.gif" alt="loading..." width="100" style="filter: sepia(100%) saturate(4) hue-rotate(310deg);">
+        <div id="form-error-message"></div>
+        <script>
+            // display loading for a short period of time so the user knows
+            // that something is happening
+            setTimeout(() => {
+                submitCode("SHOW_MANUAL_BUTTON")
+            }, 500);
+        </script>
+    <% } else if (userData?.status === 0) { %>
+        <h2 class="text-center w-100" style="color: var(--racing-red);">Check Your Inbox</h2>
+        
+        <p style="margin: 20px 0; font-size: 1.1rem; color: #ccc; text-align: left;">
+            We've sent a confirmation email to your inbox.
+            <br><br>
+            Please click the link we sent or paste the confirmation code below
+            <form id="verify_code">
+                <input type="text" name="code" id="code" placeholder="confirmation code" required autocomplete="off">
+                <button class="btn w-100" style="text-decoration: none;">Confirm Email</button>
+            </form>
+            <br>
+            <div id="form-error-message"></div>
+            <script>
+                document.getElementById("verify_code").addEventListener("submit", e => {
+                    e.preventDefault();
+                    submitCode();
+                });
+
+                // we want to update this page if the user verifies their email in a seperate page
+                setInterval(() => {
+                    submitCode("HIDE_ERRORS");
+                }, 2000);
+            </script>
+        </p>
+
+        <div style="margin-top: 15px;">
+            <p style="color: #666; font-size: 0.9rem;">Didn't receive the email? Check your spam folder.</p>
+        </div>
+    <% } else { %>
+        <h2 class="text-center w-100" style="color: var(--racing-red);">Green Light!</h2>
+        
+        <p style="margin: 20px 0; font-size: 1.1rem; color: #ccc;">
+            Your email has been successfully confirmed.<br>
+            You are now ready to hit the road.
+        </p>
+
+        <div style="margin-top: 30px;">
+            <a href="login" class="btn w-100" style="text-decoration: none;">Start Engine (Login)</a>
+        </div>
+    <% } %>
+</div>

@@ -1,12 +1,12 @@
 const { MongoClient } = require("mongodb");
 
-const Mailjet = require('node-mailjet');
-
 const cryptography = require("./cryptography");
 
 const { nowSeconds, secondsFromToken } = require("./utils");
 
 const schema = require("./schema");
+
+const mailer = require("./mailer");
 
 const OPEN = 0;
 const BANNED = -1;
@@ -123,14 +123,30 @@ function getOpenOffers() {
         .sort({ pickupTime: 1 });
 }
 
+function confirmEmail(code) {
+    return users.updateOne(
+        {  verification_codes: { $all: [code] } },
+        {$set: {
+            status: 1, 
+            verification_codes: []
+        }}
+    );
+}
+
 function addUser(data, authToken) {
+    const salt = cryptography.salt();
+
+    const confirmationCode = cryptography.uuid();
+    mailer.sendEmailConfirmation(data.email, confirmationCode);
+
     return users.insertOne({
         id: cryptography.uuid(),
         name: data.name,
         email: data.email,
-        password_hash: cryptography.sha256(data.password),
-        salt: cryptography.salt(),
+        password_hash: cryptography.sha256(salt.toString() + data.password),
+        salt: salt,
         session_tokens: [authToken],
+        verification_codes: [confirmationCode],
         status: UNVERIFIED,
         rating: 0,
         payment_types: [],
@@ -142,12 +158,27 @@ function saveUserToken(userid) {
 
 }
 
+function removeUserToken(userid, token) {
+    return users.updateOne(
+        { id: userid },
+        {$pull: {
+            session_tokens: { $in: [token] }
+        }}
+    );
+}
+
 function confirmUser() {
     // TODO: implement
 }
 
 function getUserFromEmail(email) {
     return users.findOne({ email });
+}
+
+function getUserFromToken(token) {
+    return users.findOne({ 
+        session_tokens: { $all: [token] }
+    });
 }
 
 /*
@@ -158,7 +189,7 @@ function getUserFromEmail(email) {
 async function authenticateUser(email, password) {
     const user = await getUserFromEmail(email);
     if (user) {
-        const passwordHash = cryptography.sha256(user.salt + password);
+        const passwordHash = cryptography.sha256(user.salt.toString() + password);
         // check that password is correct
         if (cryptography.constTimeEquals(user.password_hash, passwordHash)) {
             // generate new auth token
@@ -188,67 +219,12 @@ async function authenticateUser(email, password) {
     return "AuthError: No user with this email exists";
 }
 
-let mailjet = null;
-
-function connectToMailjet() {
-    mailjet = Mailjet.apiConnect(
-        SECRETS.MAILJET_KEY,
-        SECRETS.MAILKEY_SECRET
-    );
-}
-
-function sendUserConfirmationEmail(email, code, domain) {
-    mailjet
-        .post('send', { version: 'v3.1' })
-        .request({
-            Messages: [
-                {
-                    From: {
-                        Email: "darkphoton31@gmail.com",
-                        Name: "Raven Drives Account Confirmation"
-                    },
-                    To: [
-                        {
-                            Email: email,
-                            // Name: "passenger 1"
-                        }
-                    ],
-                    Subject: "Confirm Raven Drives email address",
-                    TextPart: "",
-                    HTMLPart: `
-                        <h1>Confirm Raven Drives email address</h1>
-                        <p>
-                            Thank you for using Raven Drives!
-                            <br><br>
-                            Please confirm your email address by navagating to: 
-                            <a href='http://${domain}/confirm_email/${code}'>RavenDrives.org/confirm_email/${code}</a>.
-                            <p>This is a one time confirmation.</p>
-                            <br>
-                            <p>
-                                In Christ,
-                                <br><br>
-                                Jared Gleisner 
-                                <br>
-                                If you did not attempt to sign up for Raven Drives, simply ignore this email, your account will not be created unless you confirm it here.
-                                <br>
-                                ps. Yes, I know this looks very not legit, there's not much I can do about it without spending lots of money on Azure or a Google Buisness email.
-                            </p>
-                        </p>
-                    `
-                }
-            ]
-        })
-        .then((result) => {
-            console.log(result.body)
-        })
-        .catch((err) => {
-            console.log(err.statusCode)
-        });
-}
-
 module.exports = {
     connect,
     addUser,
     authenticateUser,
-    getUserFromEmail
+    getUserFromEmail,
+    getUserFromToken,
+    removeUserToken,
+    confirmEmail
 };

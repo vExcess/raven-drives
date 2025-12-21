@@ -5,6 +5,8 @@ const Path = require("node:path");
 
 const dbIterface = require("./db-interface");
 
+const { parseCookies } = require("./utils");
+
 let userCache = {};
 
 function readPostBodyAsString(request) {
@@ -41,7 +43,7 @@ async function useTree(path, tree, data, response) {
     try {
         for (const key in tree) {
             // exact match
-            if (path === key || (key === "/" && path.length === 0)) {
+            if (path.split("?")[0] === key || (key === "/" && path.length === 0)) {
                 status = 200;
                 await tree[key]("", response, data);
                 break;
@@ -56,13 +58,7 @@ async function useTree(path, tree, data, response) {
                     switch (request.method) {
                         case "POST": {
                             data["postBody"] = await readPostBodyAsString(request);
-                            status = await useTree(path.slice(key.length), tree[key][":POST:"], data, response);
-                            if (status === 404) {
-                                response.writeHead(404);
-                                response.write("Not Found");
-                            }
-                            response.end();
-                            
+                            status = await useTree(path.slice(key.length), tree[key][":POST:"], data, response);                            
                             break;
                         }
                         case "GET": {
@@ -101,12 +97,18 @@ async function useTree(path, tree, data, response) {
 
 const routeTree = require("./router").routeTree;
 async function requestHandler(request, response) {
-    const userData = null;
-    const userToken = null;
-
     let hashedUserIP;
     if (response.req.headers["x-forwarded-for"]) {
         hashedUserIP = SHA256(AES_encrypt(response.req.headers["x-forwarded-for"], secrets.MASTER_KEY));
+    }
+
+    const cookies = parseCookies(request.headers.cookie ?? "");
+
+    let userToken = cookies["token"];
+    let userData = null;
+    
+    if (userToken) {
+        userData = await dbIterface.getUserFromToken(userToken);
     }
 
     try {

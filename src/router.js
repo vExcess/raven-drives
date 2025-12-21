@@ -47,12 +47,6 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
-    "/confirmation_sent": async (path, out, data) => {
-        const rendered = await renderPage("confirmation_sent", "Check Your Inbox", data);
-        
-        out.writeHead(200, { 'Content-Type': 'text/html' });
-        out.write(rendered);
-    },
     "/invalid_code": async (path, out, data) => {
         const rendered = await renderPage("invalid_code", "Invalid Code", data);
         
@@ -65,6 +59,12 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
+    "/view_offers": async (path, out, data) => {
+        const rendered = await renderPage("view_offers", "Open Offers", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
     "/request": async (path, out, data) => {
         const rendered = await renderPage("request", "Request Ride", data);
         
@@ -72,7 +72,7 @@ const routeTree = {
         out.write(rendered);
     },
     "/confirm_email": async (path, out, data) => {
-        const rendered = await renderPage("success", "Green Light", data);
+        const rendered = await renderPage("confirm_email", "Email Confirmation", {...data, code: urlParametersToJson(data.url)["code"] });
         
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
@@ -130,15 +130,16 @@ const routeTree = {
         },
         ":POST:": {
             "signup": async (path, out, data) => {
-                let json = urlParametersToJson(data.postBody);
+                let json = parseJSON(data.postBody);
 
                 let validationErr = null;
                 if (!validator.userSignup(json)) {
                     validationErr = JSON.stringify(validator.userSignup.errors);
                 }
 
-                const user = dbIterface.getUserFromEmail(json.email);
-                if (user && user.email === json.email) {
+                const user = await dbIterface.getUserFromEmail(json.email);
+                const UNVERIFIED = 0;
+                if (user && user.status !== UNVERIFIED && user.email === json.email) {
                     validationErr = "User with that email already exists";
                 }
 
@@ -149,7 +150,9 @@ const routeTree = {
                 }
 
                 const authToken = `${nowSeconds()}-${cryptography.uuid()}`;
-                console.log(await dbIterface.addUser(json, authToken));
+                console.log(await dbIterface.addUser(json, authToken).catch(err => {
+                    console.log(JSON.stringify(err.errInfo.details, "", "  "))
+                }));
 
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write(authToken);
@@ -173,6 +176,66 @@ const routeTree = {
                 // res may be an auth token or an error message
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write(res);
+            },
+            "logout": async (path, out, data) => {
+                let userData = data["userData"];
+                let token = data["userToken"];
+
+                let validationErr = null;
+                if (userData === null) {
+                    validationErr = "LogoutError: Not logged in";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbIterface.removeUserToken(userData.id, token);
+                if (res.modifiedCount !== 1) {
+                    console.log(`Issue while logging out ${userData.id} ${token}`, res);
+                }
+
+                // res may be an auth token or an error message
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
+            "verify_code": async (path, out, data) => {
+                let code = data.postBody;
+
+                // already verified
+                if (data?.userData?.status === 1) {
+                    out.writeHead(200);
+                    out.write("OK");
+                    return;
+                }
+
+                let validationErr = null;
+                if (!(typeof code === "string" && code.length > 20 && code.length < 30)) {
+                    validationErr = "VerifyError: Bad code";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbIterface.confirmEmail(code);
+                if (res.modifiedCount !== 1) {
+                    validationErr = "VerifyError: Invalid code";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(200);
+                    out.write(validationErr);
+                    return;
+                }
+
+                // res may be an auth token or an error message
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
             },
         }
     }

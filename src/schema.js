@@ -1,3 +1,4 @@
+const bson = require("bson");
 
 // just copy the schemas string from dev-docs.md
 const SCHEMAS_STRING = `
@@ -8,6 +9,7 @@ users {
     password_hash: string,
     salt: long,
     session_tokens: []string,
+    verification_codes: []string,
     // -1=suspended, 0=unverified, 1=verified
     status: int,
     rating: double,
@@ -55,6 +57,16 @@ requests {
     timestamp: int,
 }`;
 
+// Since JS doesn't have different number datatypes,
+// to make things easy for ourselves map the database
+// types to JS types
+const typeMappings = {
+    "string": "string",
+    "long": "number",
+    "int": "number",
+    "double": "number",
+};
+
 /*
     string => {
         users: [][]string,
@@ -78,7 +90,8 @@ function parseSchemas(schemas) {
                 .map(s2 => s2.endsWith(",") ? s2.slice(0, s2.length - 1) : s2)
                 .map(s2 => {
                     const valueKey = s2.slice(0, s2.indexOf(":"));
-                    return [valueKey, s2.slice(s2.indexOf(":") + 1).trim()];
+                    const typeKey = s2.slice(s2.indexOf(":") + 1).trim();
+                    return [valueKey, typeMappings[typeKey] ?? typeKey];
                 });
             parsedSchemas[collectionKey] = values;
         });

@@ -14,6 +14,7 @@ users {
     password_hash: string,
     salt: long,
     session_tokens: []string,
+    verification_codes: []string,
     // -1=suspended, 0=unverified, 1=verified
     status: int,
     rating: double,
