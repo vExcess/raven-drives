@@ -8,6 +8,8 @@ const schema = require("./schema");
 
 const mailer = require("./mailer");
 
+const fs = require("./hardened-fs");
+
 const OPEN = 0;
 const BANNED = -1;
 const UNVERIFIED = 0;
@@ -75,6 +77,8 @@ async function connect() {
     }));
 
     console.log("MongoDB connection established.");
+
+    loadTestData();
 }
 
 function getUserOffers(id) {
@@ -123,6 +127,44 @@ function getOpenOffers() {
         .sort({ pickupTime: 1 });
 }
 
+function getOpenRequests() {
+    // consider using strings intstead of integers
+    return requests
+        .aggregate([
+            // SELECT FROM requests WHERE status == "open"
+            { $match: { status: OPEN } },
+            // ORDER BY pickup_timerange_start DESC
+            { $sort: { pickup_timerange_start: 1 } },
+            // requests JOIN users ON requests.creator == users.id
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creator",
+                    foreignField: "id",
+                    as: "creator_info",
+                    pipeline: [{ $limit: 1 }],
+                }
+            },
+            // unwrap creator_info from array to object
+            { $unwind: "$creator_info" },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    luggage: 1,
+                    notes: 1,
+                    pickup_location: 1,
+                    dropoff_location: 1,
+                    pickup_timerange_start: 1,
+                    pickup_timerange_end: 1,
+                    creator_name: "$creator_info.name",
+                    creator_email: "$creator_info.email"
+                }
+            }
+        ])
+        .toArray();
+}
+
 function confirmEmail(code) {
     return users.updateOne(
         {  verification_codes: { $all: [code] } },
@@ -131,6 +173,10 @@ function confirmEmail(code) {
             verification_codes: []
         }}
     );
+}
+
+function deleteUser(id) {
+    return users.deleteOne({ id });
 }
 
 function addUser(data, authToken) {
@@ -219,12 +265,32 @@ async function authenticateUser(email, password) {
     return "AuthError: No user with this email exists";
 }
 
+async function removeTestData(){
+    await users.deleteMany({
+        "id": { $regex: /^!test!/ }
+    });
+    await requests.deleteMany({
+        "id": { $regex: /^!test!/ }
+    });
+    console.log("TEST DATA REMOVED");
+}
+
+async function loadTestData() {
+    const data = JSON.parse(fs.readFileSync("test-data.json", {elevatedPermissions: true}).toString());
+    await removeTestData();
+    await users.insertMany(data.users);
+    await requests.insertMany(data.requests);
+    console.log("TEST DATA LOADED");
+}
+
 module.exports = {
     connect,
     addUser,
+    deleteUser,
     authenticateUser,
     getUserFromEmail,
     getUserFromToken,
     removeUserToken,
-    confirmEmail
+    confirmEmail,
+    getOpenRequests
 };

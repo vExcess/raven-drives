@@ -12,6 +12,11 @@ const { nowSeconds, parseJSON, urlFileExt, urlParametersToJson } = require("./ut
 
 const validator = require("./validator");
 
+const OPEN = 0;
+const BANNED = -1;
+const UNVERIFIED = 0;
+const VERIFIED = 1;
+
 function renderEJS(template, data) {
     return ejs.renderFile(`./src/templates/${template}.ejs`, data);
 }
@@ -47,12 +52,6 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
-    "/invalid_code": async (path, out, data) => {
-        const rendered = await renderPage("invalid_code", "Invalid Code", data);
-        
-        out.writeHead(200, { 'Content-Type': 'text/html' });
-        out.write(rendered);
-    },
     "/offer": async (path, out, data) => {
         const rendered = await renderPage("offer", "Offer Ride", data);
         
@@ -61,6 +60,12 @@ const routeTree = {
     },
     "/view_offers": async (path, out, data) => {
         const rendered = await renderPage("view_offers", "Open Offers", data);
+        
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
+    "/view_requests": async (path, out, data) => {
+        const rendered = await renderPage("view_requests", "Open Requests", data);
         
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
@@ -139,8 +144,13 @@ const routeTree = {
 
                 const user = await dbIterface.getUserFromEmail(json.email);
                 const UNVERIFIED = 0;
-                if (user && user.status !== UNVERIFIED && user.email === json.email) {
-                    validationErr = "User with that email already exists";
+                if (user && user.email === json.email) {
+                    if (user.status === UNVERIFIED) {
+                        // delete unverified account
+                        await dbIterface.deleteUser(user.id);
+                    } else {
+                        validationErr = "User with that email already exists";
+                    }
                 }
 
                 if (validationErr !== null) {
@@ -236,6 +246,30 @@ const routeTree = {
                 // res may be an auth token or an error message
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write("OK");
+            },
+        },
+        ":GET:": {
+            "requests": async (path, out, data) => {
+                let userData = data["userData"];
+                
+                let validationErr = null;
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can view requests";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const query = urlParametersToJson(data.url);
+
+                const requests = await dbIterface.getOpenRequests();
+                console.log(requests);
+
+                out.writeHead(200, { "Content-Type": "application/json" });
+                out.write(JSON.stringify(requests));
             },
         }
     }

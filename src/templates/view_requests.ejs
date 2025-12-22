@@ -1,0 +1,75 @@
+<div style="display: flex;">
+    <!-- filters sidebar -->
+    <div>
+        
+    </div>
+    <!-- main content -->
+    <div>
+        <h1 id="h1-title">Loading requests...</h1>
+        <div class="listing-container">
+            <div id="no-requests" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">
+                <p>No open requests currently available.</p>
+                <a href="request" class="btn mt-4">Request a Ride</a>
+            </div>
+        </div>
+        <div class="centered-form-wrapper" style="display: none;">
+            <div id="form-error-message"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let titleh1 = document.getElementById("h1-title");
+let listingContainer = document.getElementsByClassName("listing-container");
+let errorWrapper = document.getElementsByClassName("centered-form-wrapper")[0];
+let errorEl = document.getElementById("form-error-message");
+
+function renderError(err) {
+    errorWrapper.style.display = "block";
+    titleh1.innerText = "An Error Occured";
+    errorEl.innerText = err.replace("Error: ", "");
+}
+
+function renderRequests(requests) {
+    titleh1.innerText = "Open Requests";
+
+    if (requests.length === 0) {
+        document.getElementById("no-requests").style.display = "box";
+    } else {
+        requests.forEach(request => {
+            let el = document.createElement("div");
+            el.innerHTML = `<div class="listing-card">
+                <div class="listing-details">
+                    <h3>${ request['pickup_location'] } &rarr; ${ request['dropoff_location'] }</h3>
+                    <div class="listing-meta">
+                        <strong>Pickup:</strong> ${ request['pickup_timerange_start'] }<br>
+                        <strong>Dropoff:</strong> ${ request['pickup_timerange_end'] }
+                        <br>
+                        <small>Posted by: ${ request['creator_name'] } (<a href="mailto:${ request['creator_email'] }">Contact</a>)</small>
+                    </div>
+                </div>
+                <div class="listing-price">
+                    ${ request['price'] }
+                </div>
+            </div>`;
+            document.body.append(el);
+        });
+    }
+}
+
+fetch("/API/requests")
+    .then(async (res) => {
+        if (res.status !== 200) {
+            return res.text();
+        }
+        return res.json();
+    })
+    .then(res => {
+        if (typeof res === "string" && res.startsWith("Error: ")) {
+            renderError(res);
+        } else {
+            renderRequests(res);
+        }
+    })
+    .catch(renderError);
+</script>

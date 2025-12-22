@@ -23,6 +23,10 @@ List of what we need to do, who's doing it, and if it's done.
 
 - [ ] make login and signup pages redirect if already signed in?
 
+- [ ] Create MongoDB indexes to increase query performance
+
+- [ ] Create in-memory cache for frequently queried things
+
 ## Less Important ToDos
     [ ] New Logo
     [ ] Let users put notes on their requests/offers

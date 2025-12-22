@@ -1,0 +1,199 @@
+{
+    "users": [
+        {
+            "id": "!test!u_001",
+            "name": "Marcus Chen",
+            "email": "m.chen@example.com",
+            "password_hash": "$2b$12$eImiTXuWVxfM37uY4JANjQ==",
+            "salt": 4829301122,
+            "session_tokens": [
+                "sess_a1"
+            ],
+            "verification_codes": [],
+            "status": 1,
+            "rating": 4.9,
+            "payment_types": [
+                "CASH"
+            ],
+            "timestamp": 1734734859
+        },
+        {
+            "id": "!test!u_002",
+            "name": "Sarah Jenkins",
+            "email": "s.jenkins@provider.net",
+            "password_hash": "$2b$12$v9X6XpM1",
+            "salt": 9938475621,
+            "session_tokens": [],
+            "verification_codes": [
+                "4492"
+            ],
+            "status": 0,
+            "rating": 0,
+            "payment_types": [
+                "BITCOIN"
+            ],
+            "timestamp": 1734735000
+        },
+        {
+            "id": "!test!u_003",
+            "name": "Alex Rivera",
+            "email": "arivera@webmail.com",
+            "password_hash": "$2b$12$L7R2",
+            "salt": 5544332211,
+            "session_tokens": [],
+            "verification_codes": [],
+            "status": -1,
+            "rating": 2.5,
+            "payment_types": [
+                "PAYPAL"
+            ],
+            "timestamp": 1734600000
+        },
+        {
+            "id": "!test!u_004",
+            "name": "Elena Rodriguez",
+            "email": "elena.r@service.com",
+            "password_hash": "$2b$12$Q1w2e3r4",
+            "salt": 1234567890,
+            "session_tokens": [
+                "sess_z9"
+            ],
+            "verification_codes": [],
+            "status": 1,
+            "rating": 5,
+            "payment_types": [
+                "APPLE_PAY"
+            ],
+            "timestamp": 1734736000
+        },
+        {
+            "id": "!test!u_005",
+            "name": "David Kim",
+            "email": "dkim82@gmail.com",
+            "password_hash": "$2b$12$A9B8C7D6",
+            "salt": 8877665544,
+            "session_tokens": [],
+            "verification_codes": [
+                "1029"
+            ],
+            "status": 0,
+            "rating": 0,
+            "payment_types": [
+                "CASH", "SOLANA"
+            ],
+            "timestamp": 1734736500
+        },
+        {
+            "id": "!test!u_006",
+            "name": "Sonia Gupta",
+            "email": "s.gupta@it-consult.com",
+            "password_hash": "$2b$12$R9t7y6u5i4o3",
+            "salt": 1122334455,
+            "session_tokens": ["sess_sg_99"],
+            "verification_codes": [],
+            "status": 1,
+            "rating": 4.85,
+            "payment_types": ["BANK_TRANSFER"],
+            "timestamp": 1734738000
+        },
+        {
+            "id": "!test!u_007",
+            "name": "Liam O'Connor",
+            "email": "liam.oc@logistics.ie",
+            "password_hash": "$2b$12$P5o4i3u2y1t0",
+            "salt": 6677889900,
+            "session_tokens": [],
+            "verification_codes": ["7712"],
+            "status": 0,
+            "rating": 0.0,
+            "payment_types": ["CASH"],
+            "timestamp": 1734738500
+        }
+    ],
+    "requests": [
+        {
+            "id": "!test!req_101",
+            "creator": "!test!u_001",
+            "luggage": "2 Large Suitcases",
+            "notes": "Fragile items, handle with care.",
+            "pickup_location": "JFK Terminal 4",
+            "dropoff_location": "123 Manhattan Ave",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430194,
+            "status": 0,
+            "timestamp": 1765868456
+        },
+        {
+            "id": "!test!req_102",
+            "creator": "!test!u_002",
+            "luggage": "1 Backpack",
+            "notes": "Gate code is 4455.",
+            "pickup_location": "742 Evergreen Terrace",
+            "dropoff_location": "Tech Park Bldg B",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430194,
+            "status": 0,
+            "timestamp": 1765868756
+        },
+        {
+            "id": "!test!req_103",
+            "creator": "!test!u_003",
+            "luggage": "Small Box",
+            "notes": "Leave at front desk.",
+            "pickup_location": "100 Pine St, SF",
+            "dropoff_location": "500 Howard St, SF",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430194,
+            "status": 0,
+            "timestamp": 1734735800
+        },
+        {
+            "id": "!test!req_104",
+            "creator": "!test!u_004",
+            "luggage": "Duffel Bag",
+            "notes": "Will be waiting curbside.",
+            "pickup_location": "Union Station",
+            "dropoff_location": "Hilton Downtown",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430194,
+            "status": 0,
+            "timestamp": 1766127680
+        },
+        {
+            "id": "!test!req_105",
+            "creator": "!test!u_005",
+            "luggage": "Ski Gear",
+            "notes": "Large vehicle needed.",
+            "pickup_location": "Mountain Lodge",
+            "dropoff_location": "Airport Shuttle",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430194,
+            "status": 0,
+            "timestamp": 1766214100
+        },
+        {
+            "id": "!test!req_106",
+            "creator": "!test!u_006",
+            "luggage": "3 Medium Boxes",
+            "notes": "Office supplies, please use the service elevator.",
+            "pickup_location": "Tech Hub South, Austin",
+            "dropoff_location": "Main St Storage",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430124,
+            "status": 0,
+            "timestamp": 1766214100
+        },
+        {
+            "id": "!test!req_107",
+            "creator": "!test!u_001",
+            "luggage": "Golf Clubs",
+            "notes": "Pick up from the pro shop.",
+            "pickup_location": "Pine Valley Club",
+            "dropoff_location": "Airport Terminal A",
+            "pickup_timerange_start": 1766386970,
+            "pickup_timerange_end": 1766430194,
+            "status": 0,
+            "timestamp": 1766214100
+        }
+    ]
+}

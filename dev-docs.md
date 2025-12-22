@@ -50,7 +50,7 @@ offers {
 
 requests {
     id: string,
-    creator: int,
+    creator: string,
     luggage: string,
     notes: string,
     pickup_location: string,
