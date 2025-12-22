@@ -392,10 +392,7 @@ input[type="submit"]:active {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     box-sizing: border-box;
     border: none;
-    outline: black;
-
-    
-
+    outline: black;  
 }
 
 .footer-menu{
@@ -416,6 +413,7 @@ input[type="submit"]:active {
 }
 
 .copyright{
+    color: white;
     font-size: 10px;
 }
 
