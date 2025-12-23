@@ -441,6 +441,20 @@ input[type="submit"]:active {
     margin-right: 50px;
 }
 
-    
+.checkbox-group {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.checkbox-group label {
+    display: inline;
+    margin-bottom: 0;
+}
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
 
 
