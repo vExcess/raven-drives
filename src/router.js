@@ -82,6 +82,15 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
+    //currently modifying this
+    "/about": async (path, out, data) => {
+        const rendered = await renderPage("about", "About Us", data);
+
+        out.writeHead(200, {'Content-Type': 'text/html'});
+        out.write(rendered);
+    },
+    //currently modifying above
+    
     // "/user_view": async (path, out, data) => {
     //     const rendered = await renderPage("user_view", "My Dashboard", data);
         
