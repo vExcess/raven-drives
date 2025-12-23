@@ -43,24 +43,8 @@ loginForm.addEventListener("submit", e => {
             email,
             password
         })
-    }).then(async (res) => {
-        if (res.status !== 200) {
-            return Promise.resolve(`AuthError: ${await res.text()}`);
-        }
-        return res.text();
-    }).then(res => {
-        if (res.startsWith("AuthError: ")) {
-            const errorMessage = res.slice("AuthError: ".length);
-            
-            if (errorMessage.startsWith("[")) {
-                // is a validator error
-                const parsed = JSON.parse(errorMessage)[0];
-                errorEl.innerText = parsed.instancePath.slice(1) + " " + parsed.message;
-            } else {
-                // is a custom error
-                errorEl.innerText = errorMessage;
-            }
-        } else {
+    }).then(fetchMiddleware).then(res => {
+        if (!(typeof res === "string" && res.startsWith("Error: "))) {
             // store auth cookie and redirect to home
             const token = res;
             console.log(res);

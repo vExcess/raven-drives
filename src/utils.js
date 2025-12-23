@@ -23,6 +23,34 @@ function urlFileExt(url) {
     return url.slice(idx + 1);
 }
 
+function extMimeType(fileExt) {
+    let fileType = "text";
+    let fileSubType = "plain";
+
+    const fileTypes = {
+        "image": ["png", "ico", "svg", "jpg"],
+    };
+
+    for (const superType in fileTypes) {
+        if (fileTypes[superType].includes(fileExt)) {
+            fileType = superType;
+        }
+    }
+
+    const subTypeMappings = {
+        "js": "javascript",
+        "svg": "svg+xml",
+    };
+
+    if (subTypeMappings[fileExt]) {
+        fileSubType = subTypeMappings[fileExt];
+    } else {
+        fileSubType = fileExt;
+    }
+
+    return `${fileType}/${fileSubType}`;
+}
+
 function urlParametersToJson(urlParamstring) {
     const json = {};
     try {
@@ -46,6 +74,7 @@ module.exports = {
     secondsFromToken,
     parseJSON,
     urlFileExt,
+    extMimeType,
     urlParametersToJson,
     parseCookies
 };

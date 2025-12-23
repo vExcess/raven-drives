@@ -8,7 +8,7 @@ const dbIterface = require("./db-interface");
 
 const cryptography = require("./cryptography");
 
-const { nowSeconds, parseJSON, urlFileExt, urlParametersToJson } = require("./utils");
+const { nowSeconds, parseJSON, urlFileExt, extMimeType, urlParametersToJson } = require("./utils");
 
 const validator = require("./validator");
 
@@ -35,50 +35,45 @@ const routeTree = {
         out.write("Pong!");
     },
     "/": async (path, out, data) => {
-        const rendered = await renderPage("index", "Home", data);
-        
+        const rendered = await renderPage("home", "Home", data);
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/login": async (path, out, data) => {
         const rendered = await renderPage("login", "Login", data);
-        
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/signup": async (path, out, data) => {
         const rendered = await renderPage("signup", "Sign Up", data);
-        
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/offer": async (path, out, data) => {
         const rendered = await renderPage("offer", "Offer Ride", data);
-        
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/view_offers": async (path, out, data) => {
         const rendered = await renderPage("view_offers", "Open Offers", data);
-        
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/view_requests": async (path, out, data) => {
         const rendered = await renderPage("view_requests", "Open Requests", data);
-        
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/request": async (path, out, data) => {
         const rendered = await renderPage("request", "Request Ride", data);
-        
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
     "/confirm_email": async (path, out, data) => {
-        const rendered = await renderPage("confirm_email", "Email Confirmation", {...data, code: urlParametersToJson(data.url)["code"] });
-        
+        const rendered = await renderPage("confirm_email", "Email Confirmation", {
+            ...data,
+            code: urlParametersToJson(data.url)["code"]
+        });
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
@@ -94,35 +89,23 @@ const routeTree = {
 
         // figure out the type of file
         let fileExt = urlFileExt(path);
-        let fileType = "text";
-        let fileSubType = "plain";
+        let mimeType = extMimeType(fileExt);
 
-        if (["png", "ico", "svg", "jpg"].includes(fileExt)) fileType = "image";
-        if (fileExt === "js") {
-            fileSubType = "javascript";
-        } else if (fileExt === "svg") {
-            fileSubType = "svg+xml";
-        } else {
-            fileSubType = fileExt;
-        }
-
-        // tell client to cache stuff for 1 week in production
+        // tell client to cache stuff for 1 day in production
         if (!SECRETS.DEV) {
-            out.setHeader("Cache-Control", "public, max-age=" + (60 * 60 * 24 * 7));
+            out.setHeader("Cache-Control", "public, max-age=" + (60 * 60 * 24 * 1));
         }
 
-        let fetchPath = "./src/static/" + path;
-        let dataOut = null;
-
+        let dataOut;
         try {
-            dataOut = fs.readFileSync(fetchPath);
+            dataOut = fs.readFileSync("./src/static/" + path);
         } catch (e) {
             dataOut = null;
         }
 
         if (dataOut !== null) {
             // send file
-            out.writeHead(200, { "Content-Type": `${fileType}/${fileSubType}` });
+            out.writeHead(200, { "Content-Type": mimeType });
             out.write(dataOut);
         } else {
             out.writeHead(404);
@@ -193,7 +176,7 @@ const routeTree = {
 
                 let validationErr = null;
                 if (userData === null) {
-                    validationErr = "LogoutError: Not logged in";
+                    validationErr = "Error: Not logged in";
                 }
 
                 if (validationErr !== null) {
@@ -223,7 +206,7 @@ const routeTree = {
 
                 let validationErr = null;
                 if (!(typeof code === "string" && code.length > 20 && code.length < 30)) {
-                    validationErr = "VerifyError: Bad code";
+                    validationErr = "Error: Bad code";
                 }
 
                 if (validationErr !== null) {
@@ -234,7 +217,7 @@ const routeTree = {
 
                 const res = await dbIterface.confirmEmail(code);
                 if (res.modifiedCount !== 1) {
-                    validationErr = "VerifyError: Invalid code";
+                    validationErr = "Error: Invalid code";
                 }
 
                 if (validationErr !== null) {
@@ -266,7 +249,6 @@ const routeTree = {
                 const query = urlParametersToJson(data.url);
 
                 const requests = await dbIterface.getOpenRequests();
-                console.log(requests);
 
                 out.writeHead(200, { "Content-Type": "application/json" });
                 out.write(JSON.stringify(requests));

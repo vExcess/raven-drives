@@ -259,10 +259,10 @@ async function authenticateUser(email, password) {
             // return new auth token to be sent to user
             return authToken;
         } else {
-            return "AuthError: Password is incorrect";
+            return "Error: Password is incorrect";
         }
     }
-    return "AuthError: No user with this email exists";
+    return "Error: No user with this email exists";
 }
 
 async function removeTestData(){

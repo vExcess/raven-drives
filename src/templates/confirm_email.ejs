@@ -1,15 +1,4 @@
-<script>
-    function urlParametersToJson(urlParamstring) {
-        const json = {};
-        try {
-            const entries = new URLSearchParams(urlParamstring.slice(Math.max(0, urlParamstring.indexOf("?")))).entries();
-            for (const [key, value] of entries) {
-                json[key] = value;
-            }
-        } catch (e) {}
-        return json;
-    }
-    
+<script>    
     function submitCode(option) {
         let loading = document.getElementById("loading");
         let errorEl = document.getElementById("form-error-message");
@@ -20,29 +9,50 @@
         } else {
             code = code.value;
         }
+        
+        // had to modify to be able to hide errors
+        async function fetchMiddlewareModified(res) {
+            let out;
+            if (res.status !== 200) {
+                const errorMessage = await res.text();
+                if (errorMessage.startsWith("Error: ")) {
+                    out = errorMessage;
+                } else {
+                    out = `Error: ${errorMessage}`;
+                }
+                if (option !== "HIDE_ERRORS") {
+                    renderError(errorMessage);
+                }
+                return Promise.resolve(out);
+            }
+
+            let contentType = res.headers.get("content-type");
+            if (contentType === "application/json") {
+                out = await res.json();
+            } else {
+                out = await res.text();
+            }
+            return Promise.resolve(out);
+        }
 
         fetch("/API/verify_code", {
             method: "POST",
             body: code
-        }).then(async (res) => {
-            if (res.status !== 200) {
-                return Promise.resolve(`VerifyError: ${await res.text()}`);
-            }
-            return res.text();
-        }).then(res => {
-            if (res.startsWith("VerifyError: ")) {
+        }).then(fetchMiddlewareModified).then(res => {
+            if (typeof res === "string" && res.startsWith("Error: ")) {
                 if (option !== "HIDE_ERRORS") {
-                    const errorMessage = res.slice("VerifyError: ".length);
-                    errorEl.innerText = errorMessage;
+                    renderError(res.replace("Error: ", ""));
+                }
+                if (loading && option !== "HIDE_ERRORS") {
                     loading.style.display = "none";
                 }
                 if (option === "SHOW_MANUAL_BUTTON") {
-                    errorEl.innerHTML += `<br><br><a href="confirm_email" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Enter Code Manually</a>`;
+                    document.getElementById("manual-button").style.display = "block";
                 }
             } else {
                 window.location.reload();
             }
-        })
+        });
     }
 </script>
 
@@ -51,18 +61,22 @@
         <h2 class="text-center w-100" style="color: var(--racing-red);">Confirming Email</h2>
         <img id="loading" src="static/loading.gif" alt="loading..." width="100" style="filter: sepia(100%) saturate(4) hue-rotate(310deg);">
         <div id="form-error-message"></div>
+        <div id="manual-button" style="display: none;">
+            <br><br>
+            <a href="confirm_email" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Enter Code Manually</a>
+        </div>
         <script>
             // display loading for a short period of time so the user knows
             // that something is happening
             setTimeout(() => {
-                submitCode("SHOW_MANUAL_BUTTON")
+                submitCode("SHOW_MANUAL_BUTTON");
             }, 500);
         </script>
     <% } else if (userData?.status === 0) { %>
         <h2 class="text-center w-100" style="color: var(--racing-red);">Check Your Inbox</h2>
         
         <p style="margin: 20px 0; font-size: 1.1rem; color: #ccc; text-align: left;">
-            We've sent a confirmation email to your inbox.
+            We've sent a confirmation email to <%= userData?.email %>
             <br><br>
             Please click the link we sent or paste the confirmation code below
             <form id="verify_code">
@@ -87,7 +101,7 @@
         <div style="margin-top: 15px;">
             <p style="color: #666; font-size: 0.9rem;">Didn't receive the email? Check your spam folder.</p>
         </div>
-    <% } else { %>
+    <% } else if (userData?.status === 1) { %>
         <h2 class="text-center w-100" style="color: var(--racing-red);">Green Light!</h2>
         
         <p style="margin: 20px 0; font-size: 1.1rem; color: #ccc;">
@@ -97,6 +111,16 @@
 
         <div style="margin-top: 30px;">
             <a href="login" class="btn w-100" style="text-decoration: none;">Start Engine (Login)</a>
+        </div>
+    <% } else { %>
+        <h2 class="text-center w-100" style="color: var(--racing-red);">Who are you?</h2>
+        
+        <p style="margin: 20px 0; font-size: 1.1rem; color: #ccc;">
+            You must login before you can verify your account.
+        </p>
+
+        <div style="margin-top: 30px;">
+            <a href="login" class="btn w-100" style="text-decoration: none;">Login</a>
         </div>
     <% } %>
 </div>
