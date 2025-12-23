@@ -3,12 +3,16 @@
     <div style="text-align: center; color: #aaa; margin-top: 50px;">
         <p>Loading offers...</p>
         <p>No open offers currently available. Be the first to post one!</p>
-        <a href="{{ url_for('offer') }}" class="btn mt-4">Post an Offer</a>
+        <a href="offer" class="btn mt-4">Post an Offer</a>
     </div>
 </div>
 
 <script>
+let listingContainer = document.getElementsByClassName("listing-container")[0];
+
 function renderOffers(offers) {
+    listingContainer.innerHTML = "";
+
     offers.forEach(offer => {
         let el = document.createElement("div");
         el.innerHTML = `<div class="listing-card">
@@ -25,12 +29,12 @@ function renderOffers(offers) {
                 ${ offer['price'] }
             </div>
         </div>`;
-        document.body.append(el);
+        listingContainer.append(el);
     });
     
 }
 
 fetch("/API/offers")
-    .then(res => res.json())
+    .then(fetchMiddleware)
     .then(renderOffers);
 </script>

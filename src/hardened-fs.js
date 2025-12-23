@@ -31,7 +31,7 @@ function hasAccess(filePath, options) {
         if (elevatedPermissions) {
             approved = true;
         } else {
-            const subFilePath = absFilePath.slice(absProjectPath.length);
+            const subFilePath = absFilePath.slice(absProjectPath.length).replace(/\\/g, "/");
             for (const pattern of whitelist) {
                 if (subFilePath.startsWith(pattern)) {
                     approved = true;

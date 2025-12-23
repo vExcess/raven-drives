@@ -1,7 +1,36 @@
 <div style="display: flex;">
     <!-- filters sidebar -->
     <div>
+        <form id="filters">
+            <label for="pickup_location">Pickup Location</label>
+            <input name="pickup_location" type="text" value="">
+            <br>
+
+            <label for="dropoff_location">Dropoff Location</label>
+            <input name="dropoff_location" type="text" value="">
+            <br>
+
+            <label for="pickup_timerange_start">Pickup TimeRange Start</label>
+            <input name="pickup_timerange_start" type="datetime-local">
+            <br>
+
+            <label for="pickup_timerange_end">Pickup TimeRange End</label>
+            <input name="pickup_timerange_end" type="datetime-local">
+            <br>
+
+            <div class="checkbox-group">
+                <label for="open">Open</label>
+                <input name="open" type="checkbox" checked>
+            </div>
+
+            <div class="checkbox-group">
+                <label for="closed">Closed</label>
+                <input name="closed" type="checkbox">
+            </div>
+
+        </form>
         
+        <button type="submit">Apply</button>
     </div>
     <!-- main content -->
     <div>
@@ -20,14 +49,15 @@
 
 <script>
 let titleh1 = document.getElementById("h1-title");
-let listingContainer = document.getElementsByClassName("listing-container");
+let listingContainer = document.getElementsByClassName("listing-container")[0];
 let errorWrapper = document.getElementsByClassName("centered-form-wrapper")[0];
 let errorEl = document.getElementById("form-error-message");
 
-function renderError(err) {
+function renderErrorWrapper(err) {
     errorWrapper.style.display = "block";
     titleh1.innerText = "An Error Occured";
-    errorEl.innerText = err.replace("Error: ", "");
+    console.log(err);
+    renderError(err.replace("Error: ", ""));
 }
 
 function renderRequests(requests) {
@@ -36,40 +66,39 @@ function renderRequests(requests) {
     if (requests.length === 0) {
         document.getElementById("no-requests").style.display = "box";
     } else {
+        listingContainer.innerHTML = "";
+
         requests.forEach(request => {
             let el = document.createElement("div");
+            
             el.innerHTML = `<div class="listing-card">
                 <div class="listing-details">
                     <h3>${ request['pickup_location'] } &rarr; ${ request['dropoff_location'] }</h3>
                     <div class="listing-meta">
-                        <strong>Pickup:</strong> ${ request['pickup_timerange_start'] }<br>
-                        <strong>Dropoff:</strong> ${ request['pickup_timerange_end'] }
+                        <strong>Pickup:</strong> ${ secondsToDateTimeString(request['pickup_timerange_start']) }<br>
+                        <strong>Dropoff:</strong> ${ secondsToDateTimeString(request['pickup_timerange_end']) }
                         <br>
                         <small>Posted by: ${ request['creator_name'] } (<a href="mailto:${ request['creator_email'] }">Contact</a>)</small>
                     </div>
                 </div>
                 <div class="listing-price">
-                    ${ request['price'] }
+                    ${ "" }
                 </div>
             </div>`;
-            document.body.append(el);
+
+            listingContainer.append(el);
         });
     }
 }
 
 fetch("/API/requests")
-    .then(async (res) => {
-        if (res.status !== 200) {
-            return res.text();
-        }
-        return res.json();
-    })
+    .then(fetchMiddleware)
     .then(res => {
         if (typeof res === "string" && res.startsWith("Error: ")) {
-            renderError(res);
+            renderErrorWrapper(res);
         } else {
             renderRequests(res);
         }
     })
-    .catch(renderError);
+    .catch(renderErrorWrapper);
 </script>

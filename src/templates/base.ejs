@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,10 +16,14 @@
         }
     </style>
 </head>
-
 <body>
+    <!-- escape the script tags because HTML parsers don't know to ignore tags in strings -->
+    <%- `\<script\>const loggedIn = ${userData !== null};\<\/script\>` %>
+
+    <script src="/static/scripts.js"></script>
+
     <div class="navbar">
-        <a href="/" class="brand">RAVEN<span>DRIVES</span></a>
+        <a href="/" class="brand"><span>RAVEN</span><span>DRIVES</span></a>
         <div>
             <% if (userData===null) { %>
                 <a href="login" class="btn" style="padding: 8px 16px; font-size: 0.8rem;">Login</a>
@@ -48,64 +51,22 @@
                 <h2 class="text-center w-100">You must verify your email address before you can use the service</h2>
                 <a href="confirm_email" class="btn w-100" style="padding: 8px 16px; font-size: 0.8rem;">Verify</a>
             </div>
-            <% } else { %>
-                <%- content %>
-                    <% } %>
+        <% } else { %>
+            <%- content %>
+        <% } %>
     </div>
 
-    <%- userData !==null ? "<div id='loggedIn' style='display: none;'></div>" : "" %>
-
-        <footer>
-            <div class="footer-menu">
-                <a href="https://github.com/vExcess/raven-drives">GitHub</a>
-                <a href="help">Support</a>
-                <a href="about">About Us</a>
-                <a href="https://mit-license.org/">License</a>
-                <div class = "copyright"> 
-                    &copy; Copyright 2025 Raven Drives   
-                </div>
-        </footer>
-        <script>
-
-            const loggedIn = !!document.getElementById("loggedIn");
-
-            function parseCookies(cookies) {
-                return Object.fromEntries(cookies.split("; ").map(s => {
-                    var e = s.indexOf("=");
-                    return [s.slice(0, e), s.slice(e + 1, s.length)];
-                }));
-            }
-
-            function deleteAuthToken() {
-                document.cookie = 'token=; max-age=-1000; Secure; path=/';
-            }
-
-            if (!loggedIn && parseCookies(document.cookie ?? "")) {
-                // the user auth token is invalid so delete it
-                deleteAuthToken();
-            }
-
-            function logout() {
-                fetch("/API/logout", {
-                    method: "POST",
-                    body: ""
-                }).then(async (res) => {
-                    if (res.status !== 200) {
-                        return Promise.resolve(`LogoutError: ${await res.text()}`);
-                    }
-                    return res.text();
-                }).then(res => {
-                    if (res.startsWith("LogoutError: ")) {
-                        alert(res);
-                    } else {
-                        // delete auth cookie
-                        deleteAuthToken();
-                        window.location.reload();
-                    }
-                })
-            }
-        </script>
+    <footer>
+        <div class="footer-menu">
+            <a href="https://github.com/vExcess/raven-drives">GitHub</a>
+            <a href="help">Support</a>
+            <a href="about">About Us</a>
+            <a href="https://mit-license.org/">License</a>
+            <div class="copyright"> 
+                &copy; Copyright 2025 Raven Drives   
+            </div>
+        </div>
+    </footer>
 
 </body>
-
 </html>

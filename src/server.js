@@ -113,7 +113,7 @@ async function requestHandler(request, response) {
 
     try {
         // normalize and remove trailing slashes
-        let url = Path.normalize(request.url);
+        let url = Path.posix.normalize(request.url);
         if (url.endsWith("/")) {
             url = url.slice(0, url.length - 1);
         }
