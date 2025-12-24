@@ -92,6 +92,13 @@ const routeTree = {
     //     out.writeHead(200, { 'Content-Type': 'text/html' });
     //     out.write(rendered);
     // },
+    //help page (in progress)
+    "/help": async (path, out, data) => {
+        const rendered = await renderPage("help", "Help", data);
+
+        out.writeHead(200, {'Content-Type': 'text/html'});
+        out.write(rendered);
+    },
     "/static/": async (path, out, data) => {
         // stop browsers from complaining about CORS issues
         out.setHeader("Access-Control-Allow-Origin", "*");
