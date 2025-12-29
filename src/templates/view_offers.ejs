@@ -76,12 +76,14 @@ function renderOffers(offers) {
                     <h3>${ offer['pickup_location'] } &rarr; ${ offer['dropoff_location'] }</h3>
                     <div class="listing-meta">
                         <strong>Pickup:</strong> ${ secondsToDateTimeString(offer['pickup_time']) }<br>
+                        <strong>Dropoff:</strong> ${ secondsToDateTimeString(offer['dropoff_time']) }<br>
                         <br>
+                        <strong>Total Seats:</strong> ${ offer['total_seats'] }<strong>Available Seats:</strong> ${ offer['available_seats'] }
                         <small>Posted by: ${ offer['creator_name'] } (<a href="mailto:${ offer['creator_email'] }">Contact</a>)</small>
                     </div>
                 </div>
                 <div class="listing-price">
-                    ${ offer['price'] }
+                    $${ offer['price'] }
                 </div>
             </div>`;
 

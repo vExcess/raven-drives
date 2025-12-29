@@ -205,6 +205,7 @@ function getOpenRequests() {
                     dropoff_location: 1,
                     pickup_timerange_start: 1,
                     pickup_timerange_end: 1,
+                    price: 1,
                     creator_name: "$creator_info.name",
                     creator_email: "$creator_info.email"
                 }
