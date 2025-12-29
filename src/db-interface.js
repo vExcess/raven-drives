@@ -342,5 +342,6 @@ module.exports = {
     confirmEmail,
     getOpenRequests,
     addOffer,
-    addRequest
+    addRequest,
+    getOpenOffers
 };
