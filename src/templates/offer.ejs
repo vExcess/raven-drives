@@ -1,6 +1,6 @@
 <div class="centered-form-wrapper" style="width: fit-content; min-width: min(500px, 90vw); max-width: 95vw;">
     <h2 class="text-center w-100">Offer a Ride</h2>
-    <form action="offer" method="post">
+    <form action="/API/add_offer" method="post">
         <div>
             <label>Pickup Location</label>
             <input type="text" name="pickup_location" placeholder="e.g. KC Airport" required>
@@ -22,6 +22,14 @@
         <div>
             <label>Fee ($)</label>
             <input type="number" name="price" min="0" placeholder="20" required>
+        </div>
+        <div>
+            <label>Available Seats</label>
+            <input type="number" name="total_seats" min="1" placeholder="1" required>
+        </div>
+        <div>
+            <label>Notes</label>
+            <textarea name="notes" placeholder="Use this (optionally) to clarify any details, like that you're willing to negotiate price for multiple passengers, or that you have a lot of trunk space"></textarea>
         </div>
         <div style="text-align: center; margin-top: 10px;">
             <input type="submit" value="Post Offer" class="btn w-100">

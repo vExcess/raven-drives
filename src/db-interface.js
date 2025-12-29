@@ -101,30 +101,78 @@ function updateRequestStatus(id, status) {
     }});
 }
 
-function addOffer(requestId, status) {
+function addOffer(userID, data) {
     return offers.insertOne({
-    //     id: int,
-    //     creator: int,
-    //     pickupLocation: string,
-    //     dropoffLocation: string,
-    //     pickupTime: int,
-    //     price: double,
-    //     // passenger seat count; driver not included
-    //     availableSeats: int,
-    //     totalSeats: int,
-    //     usersServing: []string,
-    //     // 0=open
-    //     status: int,
-    //     notes: string,
-    //     timestamp: int,
+        id: cryptography.uuid(),
+        creator: userID,
+        pickupLocation: data.pickup_location,
+        dropoffLocation: data.dropoff_location,
+        pickupTime: data.pickup_time,
+        price: data.price,
+        // unclaimed passenger seats
+        availableSeats: data.total_seats,
+        // passenger seat count; driver not included
+        totalSeats: data.total_seats,
+        usersServing: [],
+        // 0=open
+        status: OPEN,
+        notes: data.notes,
+        timestamp: nowSeconds(),
+    });
+}
+
+function addRequest(userID, data) {
+    return requests.insertOne({
+        id: cryptography.uuid(),
+        creator: userID,
+        pickup_location: data.pickup_location,
+        dropoff_location: data.dropoff_location,
+        pickup_timerange_start: data.pickup_time,
+        pickup_timerange_end: data.dropoff_time,
+        price: data.price,
+        notes: data.notes,
+        // 0=open
+        status: OPEN,
+        timestamp: nowSeconds(),
     });
 }
 
 function getOpenOffers() {
-    // consider using strings intstead of integers
     return offers
-        .find({ status: OPEN })
-        .sort({ pickupTime: 1 });
+        .aggregate([
+            // SELECT FROM offers WHERE status == "open"
+            { $match: { status: OPEN } },
+            // ORDER BY pickupTime ASC
+            { $sort: { pickupTime: 1 } },
+            // offers JOIN users ON offers.creator == users.id
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "creator",
+                    foreignField: "id",
+                    as: "creator_info",
+                    pipeline: [{ $limit: 1 }],
+                }
+            },
+            // unwrap creator_info from array to object
+            { $unwind: "$creator_info" },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    pickup_location: "$pickupLocation",
+                    dropoff_location: "$dropoffLocation",
+                    pickup_time: "$pickupTime",
+                    price: 1,
+                    available_seats: "$availableSeats",
+                    total_seats: "$totalSeats",
+                    notes: 1,
+                    creator_name: "$creator_info.name",
+                    creator_email: "$creator_info.email"
+                }
+            }
+        ])
+        .toArray();
 }
 
 function getOpenRequests() {
@@ -292,5 +340,7 @@ module.exports = {
     getUserFromToken,
     removeUserToken,
     confirmEmail,
-    getOpenRequests
+    getOpenRequests,
+    addOffer,
+    addRequest
 };

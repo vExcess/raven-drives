@@ -246,6 +246,60 @@ const routeTree = {
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write("OK");
             },
+            "add_offer": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+                let userData = data["userData"];
+
+                let validationErr = null;
+                if (!json || !json.pickup_location || !json.dropoff_location || !json.pickup_time || !json.price || !json.total_seats) {
+                    validationErr = "Error: Invalid offer data";
+                }
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can add offers";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbIterface.addOffer(userData.id, json);
+                if (res.modifiedCount !== 1) {
+                    console.log(`Issue while adding offer ${userData.id} ${json}`, res);
+                }
+
+                // res may be an auth token or an error message
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
+            "add_request": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+                let userData = data["userData"];
+
+                let validationErr = null;
+                if (!json || !json.pickup_location || !json.dropoff_location || !json.pickup_time || !json.dropoff_time || !json.price) {
+                    validationErr = "Error: Invalid request data";
+                }
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can add requests";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbIterface.addRequest(userData.id, json);
+                if (res.modifiedCount !== 1) {
+                    console.log(`Issue while adding request ${userData.id} ${json}`, res);
+                }
+
+                // res may be an auth token or an error message
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
         },
         ":GET:": {
             "requests": async (path, out, data) => {
@@ -268,6 +322,25 @@ const routeTree = {
 
                 out.writeHead(200, { "Content-Type": "application/json" });
                 out.write(JSON.stringify(requests));
+            },
+            "offers": async (path, out, data) => {
+                let userData = data["userData"];
+                
+                let validationErr = null;
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can view offers";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const offers = await dbIterface.getOpenOffers();
+
+                out.writeHead(200, { "Content-Type": "application/json" });
+                out.write(JSON.stringify(offers));
             },
         }
     }
