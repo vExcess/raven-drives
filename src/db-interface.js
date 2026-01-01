@@ -9,6 +9,7 @@ const schema = require("./schema");
 const mailer = require("./mailer");
 
 const fs = require("./hardened-fs");
+const { use } = require("react");
 
 const OPEN = 0;
 const BANNED = -1;
@@ -26,6 +27,25 @@ let users = null,
     requests = null,
     reviews = null;
 
+// Important: Make sure when invalidating an auth token to remove it from the cache
+// Map<token, [userData, lastAccessTime]>
+let userTokenCache = {};
+setInterval(() => {
+    const now = nowSeconds();
+    const tokens = Object.keys(userTokenCache);
+
+    // every hour remove tokens that haven't been used in an hour
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i];
+        const cacheEntry = userTokenCache[token];
+        if (cacheEntry) {
+            const lastAccessTime = cacheEntry[1];
+            if (now - lastAccessTime > 60 * 60) {
+                delete userTokenCache[token];
+            }   
+        }
+    }
+}, 1000 * 60 * 60);
 
 async function connect() {
     // setup client
@@ -262,6 +282,7 @@ function saveUserToken(userid) {
 }
 
 function removeUserToken(userid, token) {
+    delete userTokenCache[token];
     return users.updateOne(
         { id: userid },
         {$pull: {
@@ -279,9 +300,16 @@ function getUserFromEmail(email) {
 }
 
 function getUserFromToken(token) {
-    return users.findOne({ 
-        session_tokens: { $all: [token] }
-    });
+    let user = userTokenCache[token];
+
+    if (!user) {
+        user = users.findOne({ 
+            session_tokens: { $all: [token] }
+        });
+        userTokenCache[token] = [user, nowSeconds()];
+    }
+
+    return user;
 }
 
 /*

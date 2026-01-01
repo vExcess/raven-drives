@@ -3,7 +3,7 @@ const http = require("node:http");
 const https = require("node:https");
 const Path = require("node:path");
 
-const dbIterface = require("./db-interface");
+const dbInterface = require("./db-interface");
 
 const { parseCookies } = require("./utils");
 
@@ -108,7 +108,7 @@ async function requestHandler(request, response) {
     let userData = null;
     
     if (userToken) {
-        userData = await dbIterface.getUserFromToken(userToken);
+        userData = await dbInterface.getUserFromToken(userToken);
     }
 
     try {
@@ -153,7 +153,7 @@ const mailer = require("./mailer");
 (async function main() {
     require("./secrets-loader").loadSecrets();
 
-    await dbIterface.connect();
+    await dbInterface.connect();
 
     mailer.init();
 

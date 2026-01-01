@@ -4,7 +4,7 @@ const ejs = require('ejs');
 // hardened file system
 const fs = require("./hardened-fs");
 
-const dbIterface = require("./db-interface");
+const dbInterface = require("./db-interface");
 
 const cryptography = require("./cryptography");
 
@@ -141,12 +141,12 @@ const routeTree = {
                     validationErr = JSON.stringify(validator.userSignup.errors);
                 }
 
-                const user = await dbIterface.getUserFromEmail(json.email);
+                const user = await dbInterface.getUserFromEmail(json.email);
                 const UNVERIFIED = 0;
                 if (user && user.email === json.email) {
                     if (user.status === UNVERIFIED) {
                         // delete unverified account
-                        await dbIterface.deleteUser(user.id);
+                        await dbInterface.deleteUser(user.id);
                     } else {
                         validationErr = "User with that email already exists";
                     }
@@ -159,7 +159,7 @@ const routeTree = {
                 }
 
                 const authToken = `${nowSeconds()}-${cryptography.uuid()}`;
-                console.log(await dbIterface.addUser(json, authToken).catch(err => {
+                console.log(await dbInterface.addUser(json, authToken).catch(err => {
                     console.log(JSON.stringify(err.errInfo.details, "", "  "))
                 }));
 
@@ -180,7 +180,7 @@ const routeTree = {
                     return;
                 }
 
-                const res = await dbIterface.authenticateUser(json.email, json.password);
+                const res = await dbInterface.authenticateUser(json.email, json.password);
 
                 // res may be an auth token or an error message
                 out.writeHead(200, { "Content-Type": "text/plain" });
@@ -201,7 +201,7 @@ const routeTree = {
                     return;
                 }
 
-                const res = await dbIterface.removeUserToken(userData.id, token);
+                const res = await dbInterface.removeUserToken(userData.id, token);
                 if (res.modifiedCount !== 1) {
                     console.log(`Issue while logging out ${userData.id} ${token}`, res);
                 }
@@ -231,7 +231,7 @@ const routeTree = {
                     return;
                 }
 
-                const res = await dbIterface.confirmEmail(code);
+                const res = await dbInterface.confirmEmail(code);
                 if (res.modifiedCount !== 1) {
                     validationErr = "Error: Invalid code";
                 }
@@ -264,7 +264,7 @@ const routeTree = {
                     return;
                 }
 
-                const res = await dbIterface.addOffer(userData.id, json);
+                const res = await dbInterface.addOffer(userData.id, json);
                 if (res.modifiedCount !== 1) {
                     console.log(`Issue while adding offer ${userData.id} ${json}`, res);
                 }
@@ -291,7 +291,7 @@ const routeTree = {
                     return;
                 }
 
-                const res = await dbIterface.addRequest(userData.id, json);
+                const res = await dbInterface.addRequest(userData.id, json);
                 if (res.modifiedCount !== 1) {
                     console.log(`Issue while adding request ${userData.id} ${json}`, res);
                 }
@@ -315,7 +315,7 @@ const routeTree = {
 
                 const query = urlParametersToJson(data.url);
 
-                const requests = await dbIterface.getOpenRequests({
+                const requests = await dbInterface.getOpenRequests({
                     authenticated: userData && userData.status === VERIFIED,
                     query
                 });
@@ -337,7 +337,7 @@ const routeTree = {
                     return;
                 }
 
-                const offers = await dbIterface.getOpenOffers();
+                const offers = await dbInterface.getOpenOffers();
 
                 out.writeHead(200, { "Content-Type": "application/json" });
                 out.write(JSON.stringify(offers));
