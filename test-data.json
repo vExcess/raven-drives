@@ -123,7 +123,6 @@
         {
             "id": "!test!req_101",
             "creator": "!test!u_001",
-            "luggage": "2 Large Suitcases",
             "notes": "Fragile items, handle with care.",
             "pickup_location": "JFK Terminal 4",
             "dropoff_location": "123 Manhattan Ave",
@@ -136,7 +135,6 @@
         {
             "id": "!test!req_102",
             "creator": "!test!u_002",
-            "luggage": "1 Backpack",
             "notes": "Gate code is 4455.",
             "pickup_location": "742 Evergreen Terrace",
             "dropoff_location": "Tech Park Bldg B",
@@ -149,7 +147,6 @@
         {
             "id": "!test!req_103",
             "creator": "!test!u_003",
-            "luggage": "Small Box",
             "notes": "Leave at front desk.",
             "pickup_location": "100 Pine St, SF",
             "dropoff_location": "500 Howard St, SF",
@@ -162,7 +159,6 @@
         {
             "id": "!test!req_104",
             "creator": "!test!u_004",
-            "luggage": "Duffel Bag",
             "notes": "Will be waiting curbside.",
             "pickup_location": "Union Station",
             "dropoff_location": "Hilton Downtown",
@@ -175,7 +171,6 @@
         {
             "id": "!test!req_105",
             "creator": "!test!u_005",
-            "luggage": "Ski Gear",
             "notes": "Large vehicle needed.",
             "pickup_location": "Mountain Lodge",
             "dropoff_location": "Airport Shuttle",
@@ -188,7 +183,6 @@
         {
             "id": "!test!req_106",
             "creator": "!test!u_006",
-            "luggage": "3 Medium Boxes",
             "notes": "Office supplies, please use the service elevator.",
             "pickup_location": "Tech Hub South, Austin",
             "dropoff_location": "Main St Storage",
@@ -201,7 +195,6 @@
         {
             "id": "!test!req_107",
             "creator": "!test!u_001",
-            "luggage": "Golf Clubs",
             "notes": "Pick up from the pro shop.",
             "pickup_location": "Pine Valley Club",
             "dropoff_location": "Airport Terminal A",

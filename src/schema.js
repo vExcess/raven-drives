@@ -46,7 +46,6 @@ offers {
 requests {
     id: string,
     creator: string,
-    luggage: string,
     notes: string,
     pickup_location: string,
     dropoff_location: string,

@@ -70,19 +70,32 @@ function renderRequests(requests) {
 
         requests.forEach(request => {
             let el = document.createElement("div");
+
+            let pickup_location = escape(request['pickup_location']),
+                dropoff_location = escape(request['dropoff_location']),
+                pickup_timerange_start = escape(secondsToDateTimeString(request['pickup_timerange_start'])),
+                pickup_timerange_end = escape(secondsToDateTimeString(request['pickup_timerange_end'])),
+                creator_name = escape(request['creator_name']),
+                creator_email = escape(request['creator_email']),
+                price = escape(request['price'] ? "$"+request['price'] : "");
             
+            if (!loggedIn) {
+                pickup_timerange_start = pickup_timerange_end = "Login to view time data";
+                creator_name = "Login to view client information";
+            }
+
             el.innerHTML = `<div class="listing-card">
                 <div class="listing-details">
-                    <h3>${ request['pickup_location'] } &rarr; ${ request['dropoff_location'] }</h3>
+                    <h3>${ pickup_location } &rarr; ${ dropoff_location }</h3>
                     <div class="listing-meta">
-                        <strong>Pickup:</strong> ${ secondsToDateTimeString(request['pickup_timerange_start']) }<br>
-                        <strong>Dropoff:</strong> ${ secondsToDateTimeString(request['pickup_timerange_end']) }
+                        <strong>Pickup:</strong> ${ pickup_timerange_start }<br>
+                        <strong>Dropoff:</strong> ${ pickup_timerange_end }
                         <br>
-                        <small>Posted by: ${ request['creator_name'] } (<a href="mailto:${ request['creator_email'] }">Contact</a>)</small>
+                        <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
                 </div>
                 <div class="listing-price">
-                    $${ request['price'] }
+                    ${ price }
                 </div>
             </div>`;
 

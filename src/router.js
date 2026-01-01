@@ -306,9 +306,6 @@ const routeTree = {
                 let userData = data["userData"];
                 
                 let validationErr = null;
-                if (!userData || userData.status !== VERIFIED) {
-                    validationErr = "Error: Only verified accounts can view requests";
-                }
 
                 if (validationErr !== null) {
                     out.writeHead(400);
@@ -318,7 +315,10 @@ const routeTree = {
 
                 const query = urlParametersToJson(data.url);
 
-                const requests = await dbIterface.getOpenRequests();
+                const requests = await dbIterface.getOpenRequests({
+                    authenticated: userData && userData.status === VERIFIED,
+                    query
+                });
 
                 out.writeHead(200, { "Content-Type": "application/json" });
                 out.write(JSON.stringify(requests));

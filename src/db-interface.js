@@ -175,7 +175,27 @@ function getOpenOffers() {
         .toArray();
 }
 
-function getOpenRequests() {
+function getOpenRequests(options) {
+    const fullData = {
+        _id: 0,
+        id: 1,
+        notes: 1,
+        pickup_location: 1,
+        dropoff_location: 1,
+        pickup_timerange_start: 1,
+        pickup_timerange_end: 1,
+        price: 1,
+        creator_name: "$creator_info.name",
+        creator_email: "$creator_info.email"
+    };
+
+    const nonsensitiveData = {
+        _id: 0,
+        id: 1,
+        pickup_location: 1,
+        dropoff_location: 1,
+    };
+
     // consider using strings intstead of integers
     return requests
         .aggregate([
@@ -196,19 +216,7 @@ function getOpenRequests() {
             // unwrap creator_info from array to object
             { $unwind: "$creator_info" },
             {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    luggage: 1,
-                    notes: 1,
-                    pickup_location: 1,
-                    dropoff_location: 1,
-                    pickup_timerange_start: 1,
-                    pickup_timerange_end: 1,
-                    price: 1,
-                    creator_name: "$creator_info.name",
-                    creator_email: "$creator_info.email"
-                }
+                $project: options.authenticated ? fullData : nonsensitiveData
             }
         ])
         .toArray();
