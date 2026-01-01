@@ -9,7 +9,6 @@ const schema = require("./schema");
 const mailer = require("./mailer");
 
 const fs = require("./hardened-fs");
-const { use } = require("react");
 
 const OPEN = 0;
 const BANNED = -1;
@@ -46,6 +45,8 @@ setInterval(() => {
         }
     }
 }, 1000 * 60 * 60);
+
+let ready = Promise.withResolvers();
 
 async function connect() {
     // setup client
@@ -99,29 +100,36 @@ async function connect() {
     console.log("MongoDB connection established.");
 
     loadTestData();
+
+    ready.resolve(true);
 }
 
-function getUserOffers(id) {
+async function getUserOffers(id) {
+    await ready.promise;
     return offers.find({ creator: id });
 }
 
-function getUserRequests(id) {
+async function getUserRequests(id) {
+    await ready.promise;
     return requests.find({ creator: id });
 }
 
-function updateOfferStatus(id, status) {
+async function updateOfferStatus(id, status) {
+    await ready.promise;
     return offers.updateOne({ id }, {$set: {
         status: status
     }});
 }
 
-function updateRequestStatus(id, status) {
+async function updateRequestStatus(id, status) {
+    await ready.promise;
     return requests.updateOne({ id }, {$set: {
         status: status
     }});
 }
 
-function addOffer(userID, data) {
+async function addOffer(userID, data) {
+    await ready.promise;
     return offers.insertOne({
         id: cryptography.uuid(),
         creator: userID,
@@ -141,7 +149,8 @@ function addOffer(userID, data) {
     });
 }
 
-function addRequest(userID, data) {
+async function addRequest(userID, data) {
+    await ready.promise;
     return requests.insertOne({
         id: cryptography.uuid(),
         creator: userID,
@@ -157,7 +166,8 @@ function addRequest(userID, data) {
     });
 }
 
-function getOpenOffers() {
+async function getOpenOffers() {
+    await ready.promise;
     return offers
         .aggregate([
             // SELECT FROM offers WHERE status == "open"
@@ -195,7 +205,12 @@ function getOpenOffers() {
         .toArray();
 }
 
-function getOpenRequests(options) {
+async function getOpenRequests(options) {
+    await ready.promise;
+    if (!options) {
+        options = {};
+    }
+
     const fullData = {
         _id: 0,
         id: 1,
@@ -242,7 +257,8 @@ function getOpenRequests(options) {
         .toArray();
 }
 
-function confirmEmail(code) {
+async function confirmEmail(code) {
+    await ready.promise;
     return users.updateOne(
         {  verification_codes: { $all: [code] } },
         {$set: {
@@ -252,11 +268,13 @@ function confirmEmail(code) {
     );
 }
 
-function deleteUser(id) {
+async function deleteUser(id) {
+    await ready.promise;
     return users.deleteOne({ id });
 }
 
-function addUser(data, authToken) {
+async function addUser(data, authToken) {
+    await ready.promise;
     const salt = cryptography.salt();
 
     const confirmationCode = cryptography.uuid();
@@ -281,7 +299,8 @@ function saveUserToken(userid) {
 
 }
 
-function removeUserToken(userid, token) {
+async function removeUserToken(userid, token) {
+    await ready.promise;
     delete userTokenCache[token];
     return users.updateOne(
         { id: userid },
@@ -295,11 +314,14 @@ function confirmUser() {
     // TODO: implement
 }
 
-function getUserFromEmail(email) {
+async function getUserFromEmail(email) {
+    await ready.promise;
     return users.findOne({ email });
 }
 
-function getUserFromToken(token) {
+async function getUserFromToken(token) {
+    await ready.promise;
+
     let user = userTokenCache[token];
 
     if (!user) {
@@ -318,6 +340,8 @@ function getUserFromToken(token) {
     if credentials are invalid, returns false
 */
 async function authenticateUser(email, password) {
+    await ready.promise;
+
     const user = await getUserFromEmail(email);
     if (user) {
         const passwordHash = cryptography.sha256(user.salt.toString() + password);
@@ -351,6 +375,8 @@ async function authenticateUser(email, password) {
 }
 
 async function removeTestData(){
+    await ready.promise;
+
     await users.deleteMany({
         "id": { $regex: /^!test!/ }
     });
@@ -361,6 +387,8 @@ async function removeTestData(){
 }
 
 async function loadTestData() {
+    await ready.promise;
+    
     const data = JSON.parse(fs.readFileSync("test-data.json", {elevatedPermissions: true}).toString());
     await removeTestData();
     await users.insertMany(data.users);

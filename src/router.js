@@ -29,13 +29,30 @@ async function renderPage(page, title, data) {
     })
 }
 
+let openRequestsCount, openOffersCount, ridesProvidedCount = -1;
+async function updateStats() {
+    openRequestsCount = (await dbInterface.getOpenRequests()).length;
+    openOffersCount = (await dbInterface.getOpenOffers()).length;
+    ridesProvidedCount = 12345;
+}
+
+// update stats every minute
+setInterval(updateStats, 1000 * 60);
+
 const routeTree = {
     "/ping": async (path, out, data) => {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write("Pong!");
     },
     "/": async (path, out, data) => {
-        const rendered = await renderPage("home", "Home", data);
+        if (ridesProvidedCount === -1) {
+            await updateStats();
+        }
+
+        const rendered = await renderPage("home", "Home", {
+            ...data,
+            openRequestsCount, openOffersCount, ridesProvidedCount
+        });
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
