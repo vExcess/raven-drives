@@ -1,40 +1,105 @@
-<h1>Open Offers</h1>
-<div class="listing-container">
-    <div style="text-align: center; color: #aaa; margin-top: 50px;">
-        <p>Loading offers...</p>
-        <p>No open offers currently available. Be the first to post one!</p>
-        <a href="offer" class="btn mt-4">Post an Offer</a>
+<div style="display: flex;">
+    <!-- filters sidebar -->
+    <div>
+        <form id="filters">
+            <label for="pickup_location">Pickup Location</label>
+            <input name="pickup_location" type="text" value="">
+            <br>
+
+            <label for="dropoff_location">Dropoff Location</label>
+            <input name="dropoff_location" type="text" value="">
+            <br>
+
+            <label for="pickup_timerange_start">Pickup Time Start</label>
+            <input name="pickup_timerange_start" type="datetime-local">
+            <br>
+
+            <label for="pickup_timerange_end">Pickup Time End</label>
+            <input name="pickup_timerange_end" type="datetime-local">
+            <br>
+
+            <div class="checkbox-group">
+                <label for="open">Open</label>
+                <input name="open" type="checkbox" checked>
+            </div>
+
+            <div class="checkbox-group">
+                <label for="closed">Closed</label>
+                <input name="closed" type="checkbox">
+            </div>
+
+        </form>
+        
+        <button type="submit">Apply</button>
+    </div>
+    <!-- main content -->
+    <div>
+        <h1 id="h1-title">Loading offers...</h1>
+        <div class="listing-container">
+            <div id="no-offers" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">
+                <p>No open offers currently available.</p>
+                <a href="offer" class="btn mt-4">Post an Offer</a>
+            </div>
+        </div>
+        <div class="centered-form-wrapper" style="display: none;">
+            <div id="form-error-message"></div>
+        </div>
     </div>
 </div>
 
 <script>
+let titleh1 = document.getElementById("h1-title");
 let listingContainer = document.getElementsByClassName("listing-container")[0];
+let errorWrapper = document.getElementsByClassName("centered-form-wrapper")[0];
+let errorEl = document.getElementById("form-error-message");
+
+function renderErrorWrapper(err) {
+    errorWrapper.style.display = "block";
+    titleh1.innerText = "An Error Occured";
+    console.log(err);
+    renderError(err.replace("Error: ", ""));
+}
 
 function renderOffers(offers) {
-    listingContainer.innerHTML = "";
+    titleh1.innerText = "Open Offers";
 
-    offers.forEach(offer => {
-        let el = document.createElement("div");
-        el.innerHTML = `<div class="listing-card">
-            <div class="listing-details">
-                <h3>${ offer['pickup_location'] } &rarr; ${ offer['dropoff_location'] }</h3>
-                <div class="listing-meta">
-                    <strong>Pickup:</strong> ${ offer['pickup_time'].replace('T', ' ') }<br>
-                    <strong>Dropoff:</strong> ${ offer['dropoff_time'].replace('T', ' ') }
-                    <br>
-                    <small>Posted by: ${ offer['display_name'] } (<a href="mailto:${ offer['email'] }">Contact</a>)</small>
+    if (offers.length === 0) {
+        document.getElementById("no-offers").style.display = "block";
+    } else {
+        listingContainer.innerHTML = "";
+
+        offers.forEach(offer => {
+            let el = document.createElement("div");
+            
+            el.innerHTML = `<div class="listing-card">
+                <div class="listing-details">
+                    <h3>${ offer['pickup_location'] } &rarr; ${ offer['dropoff_location'] }</h3>
+                    <div class="listing-meta">
+                        <strong>Pickup:</strong> ${ secondsToDateTimeString(offer['pickup_time']) }<br>
+                        <strong>Dropoff:</strong> ${ secondsToDateTimeString(offer['dropoff_time']) }<br>
+                        <br>
+                        <strong>Total Seats:</strong> ${ offer['total_seats'] }<strong>Available Seats:</strong> ${ offer['available_seats'] }
+                        <small>Posted by: ${ offer['creator_name'] } (<a href="mailto:${ offer['creator_email'] }">Contact</a>)</small>
+                    </div>
                 </div>
-            </div>
-            <div class="listing-price">
-                ${ offer['price'] }
-            </div>
-        </div>`;
-        listingContainer.append(el);
-    });
-    
+                <div class="listing-price">
+                    $${ offer['price'] }
+                </div>
+            </div>`;
+
+            listingContainer.append(el);
+        });
+    }
 }
 
 fetch("/API/offers")
     .then(fetchMiddleware)
-    .then(renderOffers);
+    .then(res => {
+        if (typeof res === "string" && res.startsWith("Error: ")) {
+            renderErrorWrapper(res);
+        } else {
+            renderOffers(res);
+        }
+    })
+    .catch(renderErrorWrapper);
 </script>

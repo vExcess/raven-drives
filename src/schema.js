@@ -52,6 +52,7 @@ requests {
     dropoff_location: string,
     pickup_timerange_start: int,
     pickup_timerange_end: int,
+    price: double,
     // 0=open
     status: int,
     timestamp: int,
