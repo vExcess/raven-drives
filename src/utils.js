@@ -56,7 +56,9 @@ function urlParametersToJson(urlParamstring) {
     try {
         const entries = new URLSearchParams(urlParamstring.slice(Math.max(0, urlParamstring.indexOf("?")))).entries();
         for (const [key, value] of entries) {
-            json[key] = value;
+            if (!key.startsWith("http:") && !key.startsWith("https:") && !key.includes("/")) {
+                json[key] = value;
+            }
         }
     } catch (e) {}
     return json;

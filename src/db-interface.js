@@ -11,6 +11,7 @@ const mailer = require("./mailer");
 const fs = require("./hardened-fs");
 
 const OPEN = 0;
+const CLOSED = 1;
 const BANNED = -1;
 const UNVERIFIED = 0;
 const VERIFIED = 1;
@@ -106,31 +107,31 @@ async function connect() {
 
 async function getUserOffers(id) {
     await ready.promise;
-    return offers.find({ creator: id });
+    return await offers.find({ creator: id });
 }
 
 async function getUserRequests(id) {
     await ready.promise;
-    return requests.find({ creator: id });
+    return await requests.find({ creator: id });
 }
 
 async function updateOfferStatus(id, status) {
     await ready.promise;
-    return offers.updateOne({ id }, {$set: {
+    return await offers.updateOne({ id }, {$set: {
         status: status
     }});
 }
 
 async function updateRequestStatus(id, status) {
     await ready.promise;
-    return requests.updateOne({ id }, {$set: {
+    return await requests.updateOne({ id }, {$set: {
         status: status
     }});
 }
 
 async function addOffer(userID, data) {
     await ready.promise;
-    return offers.insertOne({
+    return await offers.insertOne({
         id: cryptography.uuid(),
         creator: userID,
         pickupLocation: data.pickup_location,
@@ -151,7 +152,7 @@ async function addOffer(userID, data) {
 
 async function addRequest(userID, data) {
     await ready.promise;
-    return requests.insertOne({
+    return await requests.insertOne({
         id: cryptography.uuid(),
         creator: userID,
         pickup_location: data.pickup_location,
@@ -168,7 +169,7 @@ async function addRequest(userID, data) {
 
 async function getOpenOffers() {
     await ready.promise;
-    return offers
+    return await offers
         .aggregate([
             // SELECT FROM offers WHERE status == "open"
             { $match: { status: OPEN } },
@@ -205,11 +206,13 @@ async function getOpenOffers() {
         .toArray();
 }
 
-async function getOpenRequests(options) {
+async function getRequests(options) {
     await ready.promise;
     if (!options) {
         options = {};
     }
+
+    const query = options.query ?? {};
 
     const fullData = {
         _id: 0,
@@ -231,11 +234,42 @@ async function getOpenRequests(options) {
         dropoff_location: 1,
     };
 
+    let queryFilter = {};
+
+    let statusFilters = [];
+    if (query.open === 'true') statusFilters.push(OPEN);
+    if (query.closed === 'true') statusFilters.push(CLOSED);
+    if (statusFilters.length > 0) {
+        queryFilter.status = { $in: statusFilters };
+    }
+
+    // match if any part of the request pickup range is within the search range
+    if (query.pickup_timerange_start) {
+        queryFilter.pickup_timerange_end = { $gte: Number(query.pickup_timerange_start) };
+    }
+    if (query.pickup_timerange_end) {
+        queryFilter.pickup_timerange_start = { $lte: Number(query.pickup_timerange_end) };
+    }
+
+    // i option means the search is case-insensitive
+    if (query.pickup_location) {
+        queryFilter.pickup_location = { 
+            $regex: query.pickup_location, 
+            $options: 'i' 
+        };
+    }
+    if (query.dropoff_location) {
+        queryFilter.dropoff_location = { 
+            $regex: query.dropoff_location, 
+            $options: 'i' 
+        };
+    }
+
     // consider using strings intstead of integers
-    return requests
+    return await requests
         .aggregate([
             // SELECT FROM requests WHERE status == "open"
-            { $match: { status: OPEN } },
+            { $match: queryFilter },
             // ORDER BY pickup_timerange_start DESC
             { $sort: { pickup_timerange_start: 1 } },
             // requests JOIN users ON requests.creator == users.id
@@ -259,7 +293,7 @@ async function getOpenRequests(options) {
 
 async function confirmEmail(code) {
     await ready.promise;
-    return users.updateOne(
+    return await users.updateOne(
         {  verification_codes: { $all: [code] } },
         {$set: {
             status: 1, 
@@ -270,7 +304,7 @@ async function confirmEmail(code) {
 
 async function deleteUser(id) {
     await ready.promise;
-    return users.deleteOne({ id });
+    return await users.deleteOne({ id });
 }
 
 async function addUser(data, authToken) {
@@ -280,7 +314,7 @@ async function addUser(data, authToken) {
     const confirmationCode = cryptography.uuid();
     mailer.sendEmailConfirmation(data.email, confirmationCode);
 
-    return users.insertOne({
+    return await users.insertOne({
         id: cryptography.uuid(),
         name: data.name,
         email: data.email,
@@ -301,8 +335,10 @@ function saveUserToken(userid) {
 
 async function removeUserToken(userid, token) {
     await ready.promise;
+
     delete userTokenCache[token];
-    return users.updateOne(
+
+    return await users.updateOne(
         { id: userid },
         {$pull: {
             session_tokens: { $in: [token] }
@@ -316,19 +352,22 @@ function confirmUser() {
 
 async function getUserFromEmail(email) {
     await ready.promise;
-    return users.findOne({ email });
+    return await users.findOne({ email });
 }
 
 async function getUserFromToken(token) {
     await ready.promise;
 
-    let user = userTokenCache[token];
+    let entry = userTokenCache[token];
+    let user;
 
-    if (!user) {
-        user = users.findOne({ 
+    if (!entry) {
+        user = await users.findOne({ 
             session_tokens: { $all: [token] }
         });
         userTokenCache[token] = [user, nowSeconds()];
+    } else {
+        user = entry[0];
     }
 
     return user;
@@ -388,7 +427,7 @@ async function removeTestData(){
 
 async function loadTestData() {
     await ready.promise;
-    
+
     const data = JSON.parse(fs.readFileSync("test-data.json", {elevatedPermissions: true}).toString());
     await removeTestData();
     await users.insertMany(data.users);
@@ -397,6 +436,12 @@ async function loadTestData() {
 }
 
 module.exports = {
+    OPEN,
+    CLOSED,
+    BANNED,
+    UNVERIFIED,
+    VERIFIED,
+
     connect,
     addUser,
     deleteUser,
@@ -405,7 +450,7 @@ module.exports = {
     getUserFromToken,
     removeUserToken,
     confirmEmail,
-    getOpenRequests,
+    getRequests,
     addOffer,
     addRequest,
     getOpenOffers

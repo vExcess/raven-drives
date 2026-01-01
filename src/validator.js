@@ -4,14 +4,14 @@ const ajv = new Ajv({ allErrors: false });
 
 const name = {
     type: "string",
-    pattern: /^[a-zA-Z0-9\. ]{2,}/,
+    pattern: /^[a-zA-Z0-9\. ]{2,}$/,
     minLength: 2,
     maxLength: 50
 };
 
 const email = {
     type: "string",
-    pattern: /^[a-zA-Z0-9\.]{6,}@(ravens\.benedictine\.edu|benedictine\.edu)/,
+    pattern: /^[a-zA-Z0-9\.]{6,}@(ravens\.benedictine\.edu|benedictine\.edu)$/,
     minLength: 17,
     maxLength: 50
 };
@@ -22,7 +22,7 @@ const password = {
     maxLength: 64
 };
 
-function compileAjvValidator(props) {
+function compileAjvValidator(props, allRequired) {
     for (const fieldName in props) {
         const field = props[fieldName];
         if (typeof field.pattern === "object") {
@@ -34,7 +34,7 @@ function compileAjvValidator(props) {
     return ajv.compile({
         type: "object",
         properties: props,
-        required: Object.keys(props),
+        required: allRequired ? Object.keys(props) : [],
         additionalProperties: false
     });
 }
@@ -42,11 +42,11 @@ function compileAjvValidator(props) {
 // was previously using AJV, but I figured for our use case
 // it's easy enough to just write a custom validator generator
 // function and avoid importing an additional dependency.
-function compileValidator(props) {
+function compileValidator(props, allRequired) {
     function validator(json) {
         const expectedFieldsCount = Object.keys(props).length;
         const recievedFieldsCount = Object.keys(json).length;
-        if (recievedFieldsCount !== expectedFieldsCount) {
+        if (allRequired && recievedFieldsCount !== expectedFieldsCount) {
             validator.errors = [`Incorrect number of fields supplied: recieved ${recievedFieldsCount}; expected ${expectedFieldsCount}`];
             return false;
         }
@@ -87,11 +87,49 @@ function compileValidator(props) {
     return validator;
 }
 
-const userLogin = compileValidator({ email, password });
+const userLogin = compileValidator({ email, password }, true);
 
-const userSignup = compileValidator({ name, email, password });
+const userSignup = compileValidator({ name, email, password }, true);
+
+const viewRequestsQuery = compileValidator({
+    pickup_location: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64
+    },
+    dropoff_location: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64
+    },
+    pickup_timerange_start: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        pattern: /^[0-9]+$/
+    },
+    pickup_timerange_end: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        pattern: /^[0-9]+$/
+    },
+    open: {
+        type: "string",
+        minLength: 4,
+        maxLength: 5,
+        // pattern: /^true|false$/
+    },
+    closed: {
+        type: "string",
+        minLength: 4,
+        maxLength: 5,
+        // pattern: /^true|false$/
+    }
+});
 
 module.exports = {
     userLogin,
-    userSignup
+    userSignup,
+    viewRequestsQuery
 };

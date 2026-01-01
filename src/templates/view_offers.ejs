@@ -57,7 +57,7 @@ function renderErrorWrapper(err) {
     errorWrapper.style.display = "block";
     titleh1.innerText = "An Error Occured";
     console.log(err);
-    renderError(err.replace("Error: ", ""));
+    renderError(err.toString().replace("Error: ", ""));
 }
 
 function renderOffers(offers) {

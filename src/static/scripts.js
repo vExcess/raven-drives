@@ -13,10 +13,26 @@ function urlParametersToJson(urlParamstring) {
     try {
         const entries = new URLSearchParams(urlParamstring.slice(Math.max(0, urlParamstring.indexOf("?")))).entries();
         for (const [key, value] of entries) {
-            json[key] = value;
+            if (!key.startsWith("http:") && !key.startsWith("https:") && !key.includes("/")) {
+                json[key] = value;
+            }
         }
     } catch (e) {}
     return json;
+}
+
+function jsonToUrlParameters(json) {
+    let out = "?";
+    for (const key in json) {
+        const value = ""+json[key];
+        if (value.length > 0) {
+            if (out.length > 1) {
+                out += "&";
+            }
+            out += `${key}=${json[key]}`;   
+        }
+    }
+    return out;
 }
 
 function parseCookies(cookies) {
@@ -121,4 +137,9 @@ function secondsToDateTimeString(seconds) {
     timezone = timezone.slice(timezone.indexOf("("), timezone.indexOf(")")+1) 
     
     return `${formattedDate} @ ${hours}:${minutes} ${ampm} ${timezone}`;
+}
+
+function timeStringToSeconds(timeStr) {
+    if (timeStr.length === 0) return "";
+    return Math.round(new Date(timeStr).valueOf() / 1000);
 }

@@ -3,44 +3,40 @@
     <div>
         <form id="filters">
             <label for="pickup_location">Pickup Location</label>
-            <input name="pickup_location" type="text" value="">
+            <input id="pickup_location" name="pickup_location" type="text" value="">
             <br>
 
             <label for="dropoff_location">Dropoff Location</label>
-            <input name="dropoff_location" type="text" value="">
+            <input id="dropoff_location" name="dropoff_location" type="text" value="">
             <br>
 
             <label for="pickup_timerange_start">Pickup TimeRange Start</label>
-            <input name="pickup_timerange_start" type="datetime-local">
+            <input id="pickup_timerange_start" name="pickup_timerange_start" type="datetime-local">
             <br>
 
             <label for="pickup_timerange_end">Pickup TimeRange End</label>
-            <input name="pickup_timerange_end" type="datetime-local">
+            <input id="pickup_timerange_end" name="pickup_timerange_end" type="datetime-local">
             <br>
 
             <div class="checkbox-group">
                 <label for="open">Open</label>
-                <input name="open" type="checkbox" checked>
+                <input id="open" name="open" type="checkbox" checked>
             </div>
 
             <div class="checkbox-group">
                 <label for="closed">Closed</label>
-                <input name="closed" type="checkbox">
+                <input id="closed" name="closed" type="checkbox">
             </div>
 
+            <button type="submit">Apply</button>
         </form>
-        
-        <button type="submit">Apply</button>
     </div>
+
     <!-- main content -->
     <div>
+        <div id="form-error-message"></div>
         <h1 id="h1-title">Loading requests...</h1>
-        <div class="listing-container">
-            <div id="no-requests" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">
-                <p>No open requests currently available.</p>
-                <a href="request" class="btn mt-4">Request a Ride</a>
-            </div>
-        </div>
+        <div class="listing-container"></div>
         <div class="centered-form-wrapper" style="display: none;">
             <div id="form-error-message"></div>
         </div>
@@ -57,14 +53,19 @@ function renderErrorWrapper(err) {
     errorWrapper.style.display = "block";
     titleh1.innerText = "An Error Occured";
     console.log(err);
-    renderError(err.replace("Error: ", ""));
+    renderError(err.toString().replace("Error: ", ""));
 }
 
 function renderRequests(requests) {
     titleh1.innerText = "Open Requests";
 
     if (requests.length === 0) {
-        document.getElementById("no-requests").style.display = "box";
+        listingContainer.innerHTML = `
+            <div style="text-align: center; color: #aaa; margin-top: 50px;">
+                <p>No open requests currently available.</p>
+                <a href="request" class="btn mt-4">Request a Ride</a>
+            </div>
+        `;
     } else {
         listingContainer.innerHTML = "";
 
@@ -114,4 +115,37 @@ fetch("/API/requests")
         }
     })
     .catch(renderErrorWrapper);
+
+const filtersForm = document.getElementById("filters");
+
+const pickup_locationEl = document.getElementById("pickup_location");
+const dropoff_locationEl = document.getElementById("dropoff_location");
+const pickup_timerange_startEl = document.getElementById("pickup_timerange_start");
+const pickup_timerange_endEl = document.getElementById("pickup_timerange_end");
+const openEl = document.getElementById("open");
+const closedEl = document.getElementById("closed");
+
+filtersForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    let queryParameters = {
+        pickup_location: pickup_locationEl.value,
+        dropoff_location: dropoff_locationEl.value,
+        pickup_timerange_start: timeStringToSeconds(pickup_timerange_startEl.value),
+        pickup_timerange_end: timeStringToSeconds(pickup_timerange_endEl.value),
+        open: openEl.checked,
+        closed: closedEl.checked
+    };
+
+    fetch("/API/requests" + jsonToUrlParameters(queryParameters))
+    .then(fetchMiddleware)
+    .then(res => {
+        if (typeof res === "string" && res.startsWith("Error: ")) {
+            renderErrorWrapper(res);
+        } else {
+            renderRequests(res);
+        }
+    })
+    .catch(renderErrorWrapper);
+});
 </script>

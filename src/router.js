@@ -12,10 +12,7 @@ const { nowSeconds, parseJSON, urlFileExt, extMimeType, urlParametersToJson } = 
 
 const validator = require("./validator");
 
-const OPEN = 0;
-const BANNED = -1;
-const UNVERIFIED = 0;
-const VERIFIED = 1;
+const { OPEN, BANNED, UNVERIFIED, VERIFIED } = dbInterface;
 
 function renderEJS(template, data) {
     return ejs.renderFile(`./src/templates/${template}.ejs`, data);
@@ -31,7 +28,9 @@ async function renderPage(page, title, data) {
 
 let openRequestsCount, openOffersCount, ridesProvidedCount = -1;
 async function updateStats() {
-    openRequestsCount = (await dbInterface.getOpenRequests()).length;
+    openRequestsCount = (await dbInterface.getRequests({
+        query: { open: "true" }
+    })).length;
     openOffersCount = (await dbInterface.getOpenOffers()).length;
     ridesProvidedCount = 12345;
 }
@@ -159,7 +158,6 @@ const routeTree = {
                 }
 
                 const user = await dbInterface.getUserFromEmail(json.email);
-                const UNVERIFIED = 0;
                 if (user && user.email === json.email) {
                     if (user.status === UNVERIFIED) {
                         // delete unverified account
@@ -321,8 +319,12 @@ const routeTree = {
         ":GET:": {
             "requests": async (path, out, data) => {
                 let userData = data["userData"];
-                
+                const query = urlParametersToJson(data.url);
+
                 let validationErr = null;
+                if (!validator.viewRequestsQuery(query)) {
+                    validationErr = JSON.stringify(validator.viewRequestsQuery.errors);
+                }
 
                 if (validationErr !== null) {
                     out.writeHead(400);
@@ -330,9 +332,7 @@ const routeTree = {
                     return;
                 }
 
-                const query = urlParametersToJson(data.url);
-
-                const requests = await dbInterface.getOpenRequests({
+                const requests = await dbInterface.getRequests({
                     authenticated: userData && userData.status === VERIFIED,
                     query
                 });

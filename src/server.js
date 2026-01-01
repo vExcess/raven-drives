@@ -39,7 +39,6 @@ function readPostBodyAsString(request) {
 */
 async function useTree(path, tree, data, response) {
     let status = 404;
-    console.log(path);
     try {
         for (const key in tree) {
             // exact match
@@ -117,6 +116,8 @@ async function requestHandler(request, response) {
         if (url.endsWith("/")) {
             url = url.slice(0, url.length - 1);
         }
+
+        console.log(url);
 
         // handle the request
         let requestContext = {
