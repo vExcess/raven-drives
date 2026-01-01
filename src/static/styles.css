@@ -147,7 +147,7 @@ button,
 input[type="submit"],
 .btn {
     background-color: var(--racing-red);
-    /* !import is bad practice, but it overrides the text turning red from the a:hover rule and I'm too lazy to fix this properly right now */
+    /* !important is bad practice, but it overrides the text turning red from the a:hover rule and I'm too lazy to fix this properly right now */
     color: white !important;
     border: none;
     padding: 12px 24px;
