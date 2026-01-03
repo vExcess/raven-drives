@@ -167,14 +167,76 @@ async function addRequest(userID, data) {
     });
 }
 
-async function getOpenOffers() {
+async function getOffers(options) {
     await ready.promise;
+    if (!options) {
+        options = {};
+    }
+
+    const query = options.query ?? {};
+
+    const fullData = {
+        _id: 0,
+        id: 1,
+        pickup_location: "$pickupLocation",
+        dropoff_location: "$dropoffLocation",
+        pickup_time: "$pickupTime",
+        price: 1,
+        available_seats: "$availableSeats",
+        total_seats: "$totalSeats",
+        notes: 1,
+        status: 1,
+        creator_name: "$creator_info.name",
+        creator_email: "$creator_info.email"
+    };
+
+    const nonsensitiveData = {
+        _id: 0,
+        id: 1,
+        pickup_location: 1,
+        dropoff_location: 1,
+        status: 1,
+    };
+
+    let queryFilter = {};
+
+    let statusFilters = [];
+    if (query.open === 'true') statusFilters.push(OPEN);
+    if (query.closed === 'true') statusFilters.push(CLOSED);
+    if (statusFilters.length > 0) {
+        queryFilter.status = { $in: statusFilters };
+    }
+
+    // match if any part of the offer pickup range is within the search range
+    if (query.pickup_timerange_start) {
+        queryFilter.pickup_timerange_end = { $gte: Number(query.pickup_timerange_start) };
+    }
+    if (query.pickup_timerange_end) {
+        queryFilter.pickup_timerange_start = { $lte: Number(query.pickup_timerange_end) };
+    }
+
+    // i option means the search is case-insensitive
+    // TODO: prevent regex injection
+    if (query.pickup_location) {
+        queryFilter.pickup_location = { 
+            $regex: RegExp.escape(query.pickup_location),
+            $options: 'i' 
+        };
+    }
+    if (query.dropoff_location) {
+        queryFilter.dropoff_location = { 
+            $regex: RegExp.escape(query.dropoff_location),
+            $options: 'i' 
+        };
+    }
+
+    // consider using strings intstead of integers
     return await offers
         .aggregate([
             // SELECT FROM offers WHERE status == "open"
-            { $match: { status: OPEN } },
-            // ORDER BY pickupTime ASC
-            { $sort: { pickupTime: 1 } },
+            { $match: queryFilter },
+            // ORDER BY pickup_timerange_start DESC
+            { $sort: { pickup_timerange_start: 1 } },
             // offers JOIN users ON offers.creator == users.id
             {
                 $lookup: {
@@ -188,19 +250,7 @@ async function getOpenOffers() {
             // unwrap creator_info from array to object
             { $unwind: "$creator_info" },
             {
-                $project: {
-                    _id: 0,
-                    id: 1,
-                    pickup_location: "$pickupLocation",
-                    dropoff_location: "$dropoffLocation",
-                    pickup_time: "$pickupTime",
-                    price: 1,
-                    available_seats: "$availableSeats",
-                    total_seats: "$totalSeats",
-                    notes: 1,
-                    creator_name: "$creator_info.name",
-                    creator_email: "$creator_info.email"
-                }
+                $project: options.authenticated ? fullData : nonsensitiveData
             }
         ])
         .toArray();
@@ -223,6 +273,7 @@ async function getRequests(options) {
         pickup_timerange_start: 1,
         pickup_timerange_end: 1,
         price: 1,
+        status: 1,
         creator_name: "$creator_info.name",
         creator_email: "$creator_info.email"
     };
@@ -232,6 +283,7 @@ async function getRequests(options) {
         id: 1,
         pickup_location: 1,
         dropoff_location: 1,
+        status: 1,
     };
 
     let queryFilter = {};
@@ -252,15 +304,16 @@ async function getRequests(options) {
     }
 
     // i option means the search is case-insensitive
+    // TODO: prevent regex injection
     if (query.pickup_location) {
         queryFilter.pickup_location = { 
-            $regex: query.pickup_location, 
+            $regex: RegExp.escape(query.pickup_location),
             $options: 'i' 
         };
     }
     if (query.dropoff_location) {
         queryFilter.dropoff_location = { 
-            $regex: query.dropoff_location, 
+            $regex: RegExp.escape(query.dropoff_location),
             $options: 'i' 
         };
     }
@@ -451,7 +504,7 @@ module.exports = {
     removeUserToken,
     confirmEmail,
     getRequests,
-    addOffer,
+    getOffers,
     addRequest,
-    getOpenOffers
+    addOffer,
 };

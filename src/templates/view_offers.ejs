@@ -1,46 +1,52 @@
+<style>
+    .container {
+        justify-content: flex-start;
+    }
+</style>
+
 <div style="display: flex;">
     <!-- filters sidebar -->
-    <div>
-        <form id="filters">
-            <label for="pickup_location">Pickup Location</label>
-            <input name="pickup_location" type="text" value="">
-            <br>
+    <form id="filters">
+        <label for="pickup_location">Pickup Location</label>
+        <input id="pickup_location" name="pickup_location" type="text" value="">
+        <br>
 
-            <label for="dropoff_location">Dropoff Location</label>
-            <input name="dropoff_location" type="text" value="">
-            <br>
+        <label for="dropoff_location">Dropoff Location</label>
+        <input id="dropoff_location" name="dropoff_location" type="text" value="">
+        <br>
 
-            <label for="pickup_timerange_start">Pickup Time Start</label>
-            <input name="pickup_timerange_start" type="datetime-local">
-            <br>
+        <label for="pickup_timerange_start">Pickup TimeRange Start</label>
+        <input id="pickup_timerange_start" name="pickup_timerange_start" type="datetime-local">
+        <br>
 
-            <label for="pickup_timerange_end">Pickup Time End</label>
-            <input name="pickup_timerange_end" type="datetime-local">
-            <br>
+        <label for="pickup_timerange_end">Pickup TimeRange End</label>
+        <input id="pickup_timerange_end" name="pickup_timerange_end" type="datetime-local">
+        <br>
 
-            <div class="checkbox-group">
-                <label for="open">Open</label>
-                <input name="open" type="checkbox" checked>
-            </div>
-
-            <div class="checkbox-group">
-                <label for="closed">Closed</label>
-                <input name="closed" type="checkbox">
-            </div>
-
-        </form>
-        
-        <button type="submit">Apply</button>
-    </div>
-    <!-- main content -->
-    <div>
-        <h1 id="h1-title">Loading offers...</h1>
-        <div class="listing-container">
-            <div id="no-offers" style="display: none; text-align: center; color: #aaa; margin-top: 50px;">
-                <p>No open offers currently available.</p>
-                <a href="offer" class="btn mt-4">Post an Offer</a>
-            </div>
+        <div class="checkbox-group">
+            <label for="open">Open</label>
+            <input id="open" name="open" type="checkbox" checked>
         </div>
+
+        <div class="checkbox-group">
+            <label for="closed">Closed</label>
+            <input id="closed" name="closed" type="checkbox">
+        </div>
+
+        <button type="submit">Apply</button>
+    </form>
+
+    <!-- main content -->
+    <div class="search-results">
+        <!-- https://www.svgrepo.com/svg/524617/hamburger-menu -->
+        <svg class="hamburger-menu" xmlns="http://www.w3.org/2000/svg" width="40px" viewBox="0 0 24 24" fill="none">
+            <path d="M20 7L4 7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 12L4 12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 17L4 17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+
+        <h1 id="h1-title">Loading offers...</h1>
+        <div class="listing-container"></div>
         <div class="centered-form-wrapper" style="display: none;">
             <div id="form-error-message"></div>
         </div>
@@ -64,26 +70,44 @@ function renderOffers(offers) {
     titleh1.innerText = "Open Offers";
 
     if (offers.length === 0) {
-        document.getElementById("no-offers").style.display = "block";
+        listingContainer.innerHTML = `
+            <div id="no-offers" style="text-align: center; color: #aaa; margin-top: 50px;">
+                <p>No open offers currently available.</p>
+                <a href="offer" class="btn mt-4">Post an Offer</a>
+            </div>
+        `;
     } else {
         listingContainer.innerHTML = "";
 
         offers.forEach(offer => {
             let el = document.createElement("div");
+
+            let pickup_location = escape(offer['pickup_location']),
+                dropoff_location = escape(offer['dropoff_location']),
+                pickup_time = escape(secondsToDateTimeString(offer['pickup_time'])),
+                total_seats = escape(offer['total_seats']),
+                available_seats = escape(offer['available_seats']),
+                creator_name = escape(offer['creator_name']),
+                creator_email = escape(offer['creator_email']),
+                price = escape(offer['price'] ? "$"+offer['price'] : "");
             
+            if (!loggedIn) {
+                pickup_timerange_start = pickup_timerange_end = "Login to view time data";
+                creator_name = "Login to view client information";
+            }
+
             el.innerHTML = `<div class="listing-card">
                 <div class="listing-details">
-                    <h3>${ offer['pickup_location'] } &rarr; ${ offer['dropoff_location'] }</h3>
+                    <h3>${ pickup_location } &rarr; ${ dropoff_location }</h3>
                     <div class="listing-meta">
-                        <strong>Pickup:</strong> ${ secondsToDateTimeString(offer['pickup_time']) }<br>
-                        <strong>Dropoff:</strong> ${ secondsToDateTimeString(offer['dropoff_time']) }<br>
+                        <strong>Pickup:</strong> ${ pickup_time }<br>
                         <br>
-                        <strong>Total Seats:</strong> ${ offer['total_seats'] }<strong>Available Seats:</strong> ${ offer['available_seats'] }
-                        <small>Posted by: ${ offer['creator_name'] } (<a href="mailto:${ offer['creator_email'] }">Contact</a>)</small>
+                        <strong>Total Seats:</strong> ${ total_seats }<strong>Available Seats:</strong> ${ available_seats }
+                        <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
                 </div>
                 <div class="listing-price">
-                    $${ offer['price'] }
+                    ${ price }
                 </div>
             </div>`;
 
@@ -92,14 +116,72 @@ function renderOffers(offers) {
     }
 }
 
-fetch("/API/offers")
-    .then(fetchMiddleware)
-    .then(res => {
-        if (typeof res === "string" && res.startsWith("Error: ")) {
-            renderErrorWrapper(res);
-        } else {
-            renderOffers(res);
+const filtersForm = document.getElementById("filters");
+const pickup_locationEl = document.getElementById("pickup_location");
+const dropoff_locationEl = document.getElementById("dropoff_location");
+const pickup_timerange_startEl = document.getElementById("pickup_timerange_start");
+const pickup_timerange_endEl = document.getElementById("pickup_timerange_end");
+const openEl = document.getElementById("open");
+const closedEl = document.getElementById("closed");
+
+function updateResults() {
+    let queryParameters = {
+        pickup_location: pickup_locationEl.value,
+        dropoff_location: dropoff_locationEl.value,
+        pickup_timerange_start: timeStringToSeconds(pickup_timerange_startEl.value),
+        pickup_timerange_end: timeStringToSeconds(pickup_timerange_endEl.value),
+        open: openEl.checked,
+        closed: closedEl.checked
+    };
+
+    fetch("/API/offers" + jsonToUrlParameters(queryParameters))
+        .then(fetchMiddleware)
+        .then(res => {
+            if (typeof res === "string" && res.startsWith("Error: ")) {
+                renderErrorWrapper(res);
+            } else {
+                console.log("RENDER ", res)
+                renderOffers(res);
+            }
+        })
+        .catch(renderErrorWrapper);
+}
+
+const hamburgerMenu = document.getElementsByClassName("hamburger-menu")[0];
+const searchResultsContainer = document.getElementsByClassName("search-results")[0];
+function updateFiltersDisplay(open) {
+    if (open) {
+        filtersForm.style.display = "flex";
+        if (window.screen.width <= 925) {
+            searchResultsContainer.style.display = "none";
         }
-    })
-    .catch(renderErrorWrapper);
+    } else {
+        filtersForm.style.display = "none";
+        searchResultsContainer.style.display = "block";
+    }
+}
+hamburgerMenu.addEventListener("click", () => {
+    if (filtersForm.style.display === "flex") {
+        updateFiltersDisplay(false);
+    } else {
+        updateFiltersDisplay(true);
+    }
+})
+
+if (window.screen.width <= 925) {
+    updateFiltersDisplay(false);
+} else {
+    updateFiltersDisplay(true);
+}
+
+
+filtersForm.addEventListener("submit", e => {
+    e.preventDefault();
+    updateResults();
+    if (window.screen.width <= 925) {
+        updateFiltersDisplay(false);
+    }
+});
+
+updateResults();
 </script>

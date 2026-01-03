@@ -8,7 +8,8 @@ const dbInterface = require("./db-interface");
 
 const cryptography = require("./cryptography");
 
-const { nowSeconds, parseJSON, urlFileExt, extMimeType, urlParametersToJson } = require("./utils");
+const utils = require("./utils");
+const { nowSeconds, parseJSON, urlFileExt, extMimeType, urlParametersToJson } = utils;
 
 const validator = require("./validator");
 
@@ -31,7 +32,9 @@ async function updateStats() {
     openRequestsCount = (await dbInterface.getRequests({
         query: { open: "true" }
     })).length;
-    openOffersCount = (await dbInterface.getOpenOffers()).length;
+    openOffersCount = (await dbInterface.getOffers({
+        query: { open: "true" }
+    })).length;
     ridesProvidedCount = 12345;
 }
 
@@ -93,21 +96,36 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
-    //currently modifying this
     "/about": async (path, out, data) => {
         const rendered = await renderPage("about", "About Us", data);
 
         out.writeHead(200, {'Content-Type': 'text/html'});
         out.write(rendered);
     },
-    //currently modifying above
-    
-    // "/user_view": async (path, out, data) => {
-    //     const rendered = await renderPage("user_view", "My Dashboard", data);
+    "/user_view": async (path, out, data) => {
+        let userData = data["userData"];
+
+        if (!userData) {
+            out.writeHead(302, { "Location": "/login" });
+            out.write("Redirecting...");
+            return;
+        }
+
+        let offers = await dbInterface.getOffers({
+            authenticated: true,
+            query: { open: "true" }
+        });
+        let requests = await dbInterface.getRequests({
+            authenticated: true,
+            query: { open: "true" }
+        });
+        const rendered = await renderPage("user_view", "My Dashboard", {
+            ...data, offers, requests, utils
+        });
         
-    //     out.writeHead(200, { 'Content-Type': 'text/html' });
-    //     out.write(rendered);
-    // },
+        out.writeHead(200, { 'Content-Type': 'text/html' });
+        out.write(rendered);
+    },
     //help page (in progress)
     "/help": async (path, out, data) => {
         const rendered = await renderPage("help", "Help", data);
@@ -342,10 +360,12 @@ const routeTree = {
             },
             "offers": async (path, out, data) => {
                 let userData = data["userData"];
-                
+                const query = urlParametersToJson(data.url);
+
                 let validationErr = null;
-                if (!userData || userData.status !== VERIFIED) {
-                    validationErr = "Error: Only verified accounts can view offers";
+                // for now the requests and offers filters are the same
+                if (!validator.viewRequestsQuery(query)) {
+                    validationErr = JSON.stringify(validator.viewRequestsQuery.errors);
                 }
 
                 if (validationErr !== null) {
@@ -354,7 +374,10 @@ const routeTree = {
                     return;
                 }
 
-                const offers = await dbInterface.getOpenOffers();
+                const offers = await dbInterface.getOffers({
+                    authenticated: userData && userData.status === VERIFIED,
+                    query
+                });
 
                 out.writeHead(200, { "Content-Type": "application/json" });
                 out.write(JSON.stringify(offers));

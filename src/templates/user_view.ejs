@@ -1,0 +1,95 @@
+<h1>My Dashboard</h1>
+
+<div class="row">
+    <!-- My Offers Section -->
+    <div class="col">
+        <h2>My Offers</h2>
+        <div class="listing-container">
+            <% if (offers.length > 0) { %>
+                <% for (const offer of offers) { %>
+                    <% const isOpen = offer.status === 0; %>
+                    <div class="listing-card" style="opacity: <%= isOpen ? "1" : "0.6" %>;">
+                        <div class="listing-details">
+                            <h3><%= offer.pickup_location %> &rarr; <%= offer.dropoff_location %></h3>
+                            <div class="listing-meta">
+                                <strong>Pickup:</strong> <%= utils.secondsToDateTimeString(offer.pickup_timerange_start) %> <br>
+                                <br>
+                                Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
+                            </div>
+                        </div>
+                        <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <div class="listing-price">
+                                <%= offer.price %>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <% if (isOpen) { %>
+                                    <a href="/update_offer_status?offer_id=<%= offer.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
+                                <% } else { %>
+                                    <a href="/update_offer_status?offer_id=<%= offer.id %>&status=open" class="btn btn-small">Open</a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <p>You haven't posted any offers.</p>
+            <% } %>
+            <a href="/offer" class="btn">Post an Offer</a>
+        </div>
+    </div>
+
+    <!-- My Requests Section -->
+    <div class="col">
+        <h2>My Requests</h2>
+        <div class="listing-container">
+            <% if (requests.length > 0) { %>
+                <% for (const req of requests) { %>
+                    <% const isOpen = req.status === 0; %>
+                    <div class="listing-card" style="opacity: <%= isOpen ? "1" : "0.6" %>;">
+                        <div class="listing-details">
+                            <h3><%= req.pickup_location %> &rarr; <%= req.dropoff_location %></h3>
+                            <div class="listing-meta">
+                                <strong>Pickup:</strong> <%= utils.secondsToDateTimeString(req.pickup_timerange_start) %><br>
+                                <br>
+                                Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
+                            </div>
+                        </div>
+                        <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
+                            <div class="listing-price">
+                                $<%= req.price %>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <% if (isOpen) { %>
+                                    <a href="/update_request_status?request_id=<%= req.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
+                                <% } else { %>
+                                    <a href="/update_request_status?request_id=<%= req.id %>&status=open" class="btn btn-small">Open</a>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <p>You haven't posted any requests.</p>
+            <% } %>
+
+            <a href="commision" class="btn">Request a Ride</a>
+        </div>
+    </div>
+</div>
+
+<!-- Basic grid styling if not already in base.css -->
+<style>
+    .row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .col {
+        flex: 1;
+        min-width: 300px;
+    }
+    .btn-small {
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+</style>

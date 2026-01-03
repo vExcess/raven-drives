@@ -1,41 +1,51 @@
+<style>
+    .container {
+        justify-content: flex-start;
+    }
+</style>
+
 <div style="display: flex;">
     <!-- filters sidebar -->
-    <div>
-        <form id="filters">
-            <label for="pickup_location">Pickup Location</label>
-            <input id="pickup_location" name="pickup_location" type="text" value="">
-            <br>
+    <form id="filters">
+        <label for="pickup_location">Pickup Location</label>
+        <input id="pickup_location" name="pickup_location" type="text" value="">
+        <br>
 
-            <label for="dropoff_location">Dropoff Location</label>
-            <input id="dropoff_location" name="dropoff_location" type="text" value="">
-            <br>
+        <label for="dropoff_location">Dropoff Location</label>
+        <input id="dropoff_location" name="dropoff_location" type="text" value="">
+        <br>
 
-            <label for="pickup_timerange_start">Pickup TimeRange Start</label>
-            <input id="pickup_timerange_start" name="pickup_timerange_start" type="datetime-local">
-            <br>
+        <label for="pickup_timerange_start">Pickup TimeRange Start</label>
+        <input id="pickup_timerange_start" name="pickup_timerange_start" type="datetime-local">
+        <br>
 
-            <label for="pickup_timerange_end">Pickup TimeRange End</label>
-            <input id="pickup_timerange_end" name="pickup_timerange_end" type="datetime-local">
-            <br>
+        <label for="pickup_timerange_end">Pickup TimeRange End</label>
+        <input id="pickup_timerange_end" name="pickup_timerange_end" type="datetime-local">
+        <br>
 
-            <div class="checkbox-group">
-                <label for="open">Open</label>
-                <input id="open" name="open" type="checkbox" checked>
-            </div>
+        <div class="checkbox-group">
+            <label for="open">Open</label>
+            <input id="open" name="open" type="checkbox" checked>
+        </div>
 
-            <div class="checkbox-group">
-                <label for="closed">Closed</label>
-                <input id="closed" name="closed" type="checkbox">
-            </div>
+        <div class="checkbox-group">
+            <label for="closed">Closed</label>
+            <input id="closed" name="closed" type="checkbox">
+        </div>
 
-            <button type="submit">Apply</button>
-        </form>
-    </div>
+        <button type="submit">Apply</button>
+    </form>
 
     <!-- main content -->
-    <div>
-        <div id="form-error-message"></div>
-        <h1 id="h1-title">Loading requests...</h1>
+    <div class="search-results">
+        <!-- https://www.svgrepo.com/svg/524617/hamburger-menu -->
+        <svg class="hamburger-menu" xmlns="http://www.w3.org/2000/svg" width="40px" viewBox="0 0 24 24" fill="none">
+            <path d="M20 7L4 7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 12L4 12" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20 17L4 17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+
+        <h1 id="h1-title" style="display: inline-block;">Loading requests...</h1>
         <div class="listing-container"></div>
         <div class="centered-form-wrapper" style="display: none;">
             <div id="form-error-message"></div>
@@ -89,8 +99,8 @@ function renderRequests(requests) {
                 <div class="listing-details">
                     <h3>${ pickup_location } &rarr; ${ dropoff_location }</h3>
                     <div class="listing-meta">
-                        <strong>Pickup:</strong> ${ pickup_timerange_start }<br>
-                        <strong>Dropoff:</strong> ${ pickup_timerange_end }
+                        <strong>Pickup After:</strong> ${ pickup_timerange_start }<br>
+                        <strong>Pickup Before:</strong> ${ pickup_timerange_end }
                         <br>
                         <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
@@ -105,19 +115,7 @@ function renderRequests(requests) {
     }
 }
 
-fetch("/API/requests")
-    .then(fetchMiddleware)
-    .then(res => {
-        if (typeof res === "string" && res.startsWith("Error: ")) {
-            renderErrorWrapper(res);
-        } else {
-            renderRequests(res);
-        }
-    })
-    .catch(renderErrorWrapper);
-
 const filtersForm = document.getElementById("filters");
-
 const pickup_locationEl = document.getElementById("pickup_location");
 const dropoff_locationEl = document.getElementById("dropoff_location");
 const pickup_timerange_startEl = document.getElementById("pickup_timerange_start");
@@ -125,9 +123,7 @@ const pickup_timerange_endEl = document.getElementById("pickup_timerange_end");
 const openEl = document.getElementById("open");
 const closedEl = document.getElementById("closed");
 
-filtersForm.addEventListener("submit", e => {
-    e.preventDefault();
-
+function updateResults() {
     let queryParameters = {
         pickup_location: pickup_locationEl.value,
         dropoff_location: dropoff_locationEl.value,
@@ -138,14 +134,53 @@ filtersForm.addEventListener("submit", e => {
     };
 
     fetch("/API/requests" + jsonToUrlParameters(queryParameters))
-    .then(fetchMiddleware)
-    .then(res => {
-        if (typeof res === "string" && res.startsWith("Error: ")) {
-            renderErrorWrapper(res);
-        } else {
-            renderRequests(res);
+        .then(fetchMiddleware)
+        .then(res => {
+            if (typeof res === "string" && res.startsWith("Error: ")) {
+                renderErrorWrapper(res);
+            } else {
+                renderRequests(res);
+            }
+        })
+        .catch(renderErrorWrapper);
+}
+
+
+const hamburgerMenu = document.getElementsByClassName("hamburger-menu")[0];
+const searchResultsContainer = document.getElementsByClassName("search-results")[0];
+function updateFiltersDisplay(open) {
+    if (open) {
+        filtersForm.style.display = "flex";
+        if (window.screen.width <= 925) {
+            searchResultsContainer.style.display = "none";
         }
-    })
-    .catch(renderErrorWrapper);
+    } else {
+        filtersForm.style.display = "none";
+        searchResultsContainer.style.display = "block";
+    }
+}
+hamburgerMenu.addEventListener("click", () => {
+    if (filtersForm.style.display === "flex") {
+        updateFiltersDisplay(false);
+    } else {
+        updateFiltersDisplay(true);
+    }
+})
+
+if (window.screen.width <= 925) {
+    updateFiltersDisplay(false);
+} else {
+    updateFiltersDisplay(true);
+}
+
+
+filtersForm.addEventListener("submit", e => {
+    e.preventDefault();
+    updateResults();
+    if (window.screen.width <= 925) {
+        updateFiltersDisplay(false);
+    }
 });
+
+updateResults();
 </script>

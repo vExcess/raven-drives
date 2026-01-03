@@ -320,6 +320,7 @@ input[type="submit"]:active {
 /* Listings */
 .listing-container {
     width: 100%;
+    min-width: min(550px, 95vw);
     max-width: 800px;
     display: flex;
     flex-direction: column;
@@ -338,9 +339,6 @@ input[type="submit"]:active {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
-.listing-details {
-    min-width: 450px;
-}
 .listing-details h3 {
     margin: 0 0 10px 0;
     font-size: 1.2rem;
@@ -430,7 +428,7 @@ input[type="submit"]:active {
     outline: black;  
 }
 
-.footer-menu{
+.footer-menu {
     text-align: center;
     
 }
@@ -443,11 +441,11 @@ input[type="submit"]:active {
     
 }
 
-.footer-menu a:hover{
+.footer-menu a:hover {
     color: white;
 }
 
-.copyright{
+.copyright {
     color: white;
     font-size: 10px;
     margin-bottom: 14px;
@@ -474,7 +472,7 @@ input[type="submit"]:active {
     margin: 0;
 }
 /* This is probably unnecessary but it was the first thing that came to mind when for the abt page */
-h5{
+h5 {
     font-size: 20px;
     color: white;
     margin-bottom: 20px;
@@ -486,7 +484,26 @@ h5{
     
 }
 
-small{
+small {
     font-size: small;
 }
 
+.hamburger-menu {
+    background-color: gray;
+    border-radius: 100px;
+    padding: 2px;
+    display: inline-block;
+    transform: translateY(11px);
+    margin-right: 10px;
+    cursor: pointer;
+}
+.hamburger-menu:hover {
+    background-color: var(--racing-red);
+}
+
+/* styling is set in javascript. add this rule to prevent flickering before the JS loads in */
+@media (max-width: 925px) {
+    #filters {
+        display: none;
+    }
+}

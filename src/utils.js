@@ -71,6 +71,29 @@ function parseCookies(cookies) {
     }));
 }
 
+function secondsToDateTimeString(seconds) {
+    let date = new Date(seconds*1000);
+
+    // https://stackoverflow.com/a/8888498/19194333
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    let ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+
+    const formattedDate = date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    });
+
+    let timezone = date.toTimeString();
+    timezone = timezone.slice(timezone.indexOf("("), timezone.indexOf(")")+1) 
+    
+    return `${formattedDate} @ ${hours}:${minutes} ${ampm} ${timezone}`;
+}
+
 module.exports = {
     nowSeconds,
     secondsFromToken,
@@ -78,5 +101,6 @@ module.exports = {
     urlFileExt,
     extMimeType,
     urlParametersToJson,
-    parseCookies
+    parseCookies,
+    secondsToDateTimeString
 };
