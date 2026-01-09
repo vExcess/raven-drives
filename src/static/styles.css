@@ -104,6 +104,16 @@ h3 {
     padding-bottom: 5px;
 }
 
+.stats {
+    font-size: 1.2em;
+    position: absolute;
+    left: 20px;
+    top: 78px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-style: italic;
+    font-weight: bold;
+}
+
 /* Forms */
 form {
     display: flex;
@@ -496,10 +506,25 @@ small {
     transform: translateY(11px);
     margin-right: 10px;
     cursor: pointer;
+    transition: background-color 0.4s;
 }
+
+.hamburger-menu path {
+    transition: transform 0.3s ease;
+}
+
 .hamburger-menu:hover {
     background-color: var(--racing-red);
 }
+
+.hamburger-menu:hover path:nth-child(1) {
+    transform: translateY(-2px);
+}
+
+.hamburger-menu:hover path:nth-child(3) {
+    transform: translateY(2px);
+}
+
 
 /* styling is set in javascript. add this rule to prevent flickering before the JS loads in */
 @media (max-width: 925px) {
