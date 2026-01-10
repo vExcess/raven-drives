@@ -9,23 +9,38 @@
             <label>Dropoff Location</label>
             <input type="text" name="dropoff_location" placeholder="e.g. KC Airport" required>
         </div>
+        <div>
+            Please provide between which times you are able to be picked up. For example, assuming
+            <ul style="margin: 0.5em;">
+                <li>you get out of class at 3 PM</li>
+                <li>you want to be at the airport by 5 PM (say your flight is 7 PM and you want to be there 2 hours early)</li>
+                <li>it takes 15 minutes to get your luggage from your dorm</li>
+                <li>it takes 45 minutes to drive from Benedictine to MCI airport</li>
+            </ul>
+            you might say you are available to be picked up between 3:15 PM and 4:15 PM.
+            <br><br>
+            IMPORTANT: "Pickup TimeRange End" is the latest time you are willing to be picked up. It is NOT the time you desire to arrive at your destination. The form is structured this way because arrival at destination time is a harder to control variable due to traffic. However, feel free to include your desired arrival time in the notes section.
+        </div>
         <div style="display: flex; gap: 10px;">
             <div style="flex: 1;">
-                <label>Pickup Time</label>
-                <input type="datetime-local" name="pickup_time" required>
+                <label>Pickup TimeRange Start</label>
+                <input type="datetime-local" name="pickup_timerange_start" required>
             </div>
             <div style="flex: 1;">
-                <label>Dropoff Time</label>
-                <input type="datetime-local" name="dropoff_time" required>
+                <label>Pickup TimeRange End</label>
+                <input type="datetime-local" name="pickup_timerange_end" required>
             </div>
         </div>
         <div>
-            <label>Will Pay ($)</label>
+            To increase the chance of your request being answered, you can optionally add a bounty price. You can edit the price later in your user dashboard.
+        </div>
+        <div>
+            <label>Starting Offer ($) (optional)</label>
             <input type="number" name="price" min="0" placeholder="15" required>
         </div>
         <div>
             <label>Notes (optional)</label>
-            <textarea name="notes" placeholder="Include any special details, like if you need a lot of trunk space because you're bringing a lot of luggage"></textarea>
+            <textarea name="notes" placeholder="Include any special details. e.g. how much luggage you have"></textarea>
         </div>
         <div style="text-align: center; margin-top: 10px;">
             <input type="submit" value="Post Request" class="btn w-100">

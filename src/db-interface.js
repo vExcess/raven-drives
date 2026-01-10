@@ -161,7 +161,6 @@ async function addRequest(userID, data) {
         pickup_timerange_end: data.dropoff_time,
         price: data.price,
         notes: data.notes,
-        // 0=open
         status: OPEN,
         timestamp: nowSeconds(),
     });
