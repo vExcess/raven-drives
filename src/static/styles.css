@@ -532,3 +532,12 @@ small {
         display: none;
     }
 }
+
+@media (max-width: 800px) {
+    .container {
+        padding-top: 180px;
+    }
+    .stats {
+        top: 108px;
+    }
+}

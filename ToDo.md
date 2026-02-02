@@ -16,7 +16,7 @@ List of what we need to do, and if it's done.
 ## Important ToDos
 - [ ] Application Functionality
     - [ ] Home Page
-        - stylize ride stats to be better on mobile (desktop too idealy)
+        [x] stylize ride stats to be better on mobile (desktop too idealy)
     - [ ] Sign Up Page
         - make to redirect if already signed in?
     - [ ] Log In Page
@@ -50,11 +50,6 @@ List of what we need to do, and if it's done.
     - [ ] Create MongoDB indexes to increase query performance
     - [ ] Create in-memory cache for frequently queried things
 
-- [ ] Compression
-    - [ ] Minimize HTML/JS/CSS being sent to client to save bandwidth
-    - [ ] Setup GZIP or Brotli compression for in-transit requests to save bandwidth
-    - Users will be using the app on cellular data or slow airport WiFi. We want to minimize bandwidth so the application is snappy even with very poor internet connections.
-
 - [ ] Capture analytics data to present on discovery day
 
 ## Less Important ToDos
@@ -64,6 +59,11 @@ List of what we need to do, and if it's done.
 
 - [ ] Potentially migrate to MySQL/MariaDB or Postgres 
     - the IT department has experience with MySQL so it would make hosting easier for them
+
+- [ ] Compression
+    - [ ] Minimize HTML/JS/CSS being sent to client to save bandwidth
+    - [ ] Setup GZIP or Brotli compression for in-transit requests to save bandwidth
+    - Users will be using the app on cellular data or slow airport WiFi. We want to minimize bandwidth so the application is snappy even with very poor internet connections.
 
 ## Done
 Move stuff to this section once it's no longer relevant
