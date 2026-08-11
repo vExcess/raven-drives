@@ -362,6 +362,26 @@ input[type="submit"]:active {
     margin-top: 5px;
 }
 
+.listing-notes {
+    margin-top: 8px;
+}
+
+.notes-text {
+    white-space: pre-line;
+    overflow-wrap: break-word;
+}
+
+.notes-toggle {
+    background: none;
+    border: none;
+    color: var(--racing-red);
+    cursor: pointer;
+    font-size: 0.85rem;
+    padding: 0;
+    margin-left: 4px;
+    text-decoration: underline;
+}
+
 .listing-price {
     font-size: 1.5rem;
     font-weight: bold;

@@ -102,6 +102,8 @@ function renderRequests(requests) {
                         <strong>Pickup After:</strong> ${ pickup_timerange_start }<br>
                         <strong>Pickup Before:</strong> ${ pickup_timerange_end }
                         <br>
+                        ${ renderNotesHtml(request['notes']) }
+                        <br>
                         <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
                 </div>

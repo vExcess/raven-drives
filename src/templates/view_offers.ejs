@@ -116,7 +116,9 @@ function renderOffers(offers) {
                         <strong>Available Seats:</strong> ${ available_seats }
                         <br>
                         <strong>Total Seats:</strong> ${ total_seats }
-                        <br><br>
+                        <br>
+                        ${ renderNotesHtml(offer['notes']) }
+                        <br>
                         <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
                 </div>

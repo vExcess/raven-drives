@@ -8,6 +8,31 @@ function escape(str) {
         .replace(/'/g, "&#039;");
 }
 
+function renderNotesHtml(notes, maxLength = 100) {
+    if (!notes) return "";
+    if (notes.length <= maxLength) {
+        return `<div class="listing-notes"><strong>Notes:</strong> <span class="notes-text">${escape(notes)}</span></div>`;
+    }
+    return `<div class="listing-notes">
+        <strong>Notes:</strong>
+        <span class="notes-text notes-preview">${escape(notes.slice(0, maxLength))}…</span>
+        <span class="notes-text notes-full" hidden>${escape(notes)}</span>
+        <button type="button" class="notes-toggle">Show more</button>
+    </div>`;
+}
+
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".notes-toggle");
+    if (!btn) return;
+    const container = btn.closest(".listing-notes");
+    const preview = container.querySelector(".notes-preview");
+    const full = container.querySelector(".notes-full");
+    const expanding = full.hidden;
+    preview.hidden = expanding;
+    full.hidden = !expanding;
+    btn.textContent = expanding ? "Show less" : "Show more";
+});
+
 function urlParametersToJson(urlParamstring) {
     const json = {};
     try {
