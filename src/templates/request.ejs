@@ -1,13 +1,13 @@
 <div class="centered-form-wrapper" style="width: fit-content; min-width: min(500px, 90vw); max-width: 95vw;">
     <h2 class="text-center w-100">Request a Ride</h2>
-    <form action="/API/add_request" method="post">
+    <form id="request-form" action="/API/add_request" method="post">
         <div>
             <label>Pickup Location</label>
-            <input type="text" name="pickup_location" placeholder="e.g. The Joe" required>
+            <input type="text" name="pickup_location" id="pickup_location" placeholder="e.g. The Joe" required>
         </div>
         <div>
             <label>Dropoff Location</label>
-            <input type="text" name="dropoff_location" placeholder="e.g. KC Airport" required>
+            <input type="text" name="dropoff_location" id="dropoff_location" placeholder="e.g. KC Airport" required>
         </div>
         <div>
             Please provide between which times you are able to be picked up. For example, assuming
@@ -24,11 +24,11 @@
         <div style="display: flex; gap: 10px;">
             <div style="flex: 1;">
                 <label>Pickup TimeRange Start</label>
-                <input type="datetime-local" name="pickup_timerange_start" required>
+                <input type="datetime-local" name="pickup_timerange_start" id="pickup_timerange_start" required>
             </div>
             <div style="flex: 1;">
                 <label>Pickup TimeRange End</label>
-                <input type="datetime-local" name="pickup_timerange_end" required>
+                <input type="datetime-local" name="pickup_timerange_end" id="pickup_timerange_end" required>
             </div>
         </div>
         <div>
@@ -36,14 +36,53 @@
         </div>
         <div>
             <label>Starting Offer ($) (optional)</label>
-            <input type="number" name="price" min="0" placeholder="15" required>
+            <input type="number" name="price" id="price" min="0" placeholder="15">
         </div>
         <div>
             <label>Notes (optional)</label>
-            <textarea name="notes" placeholder="Include any special details. e.g. how much luggage you have"></textarea>
+            <textarea name="notes" id="notes" placeholder="Include any special details. e.g. how much luggage you have"></textarea>
         </div>
         <div style="text-align: center; margin-top: 10px;">
             <input type="submit" value="Post Request" class="btn w-100">
         </div>
     </form>
+    <div style="margin-top: 20px; text-align: center; font-size: 0.9rem;">
+        <div id="form-error-message"></div>
+    </div>
 </div>
+
+<script>
+let requestForm = document.getElementById("request-form");
+requestForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const payload = {
+        pickup_location: document.getElementById("pickup_location").value,
+        dropoff_location: document.getElementById("dropoff_location").value,
+        pickup_timerange_start: timeStringToSeconds(document.getElementById("pickup_timerange_start").value),
+        pickup_timerange_end: timeStringToSeconds(document.getElementById("pickup_timerange_end").value),
+    };
+
+    const priceValue = document.getElementById("price").value;
+    if (priceValue.length > 0) {
+        payload.price = Number(priceValue);
+    }
+
+    const notes = document.getElementById("notes").value;
+    if (notes.length > 0) {
+        payload.notes = notes;
+    }
+
+    fetch("/API/add_request", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    }).then(fetchMiddleware).then(res => {
+        if (!(typeof res === "string" && res.startsWith("Error: "))) {
+            window.location.href = "/user_view";
+        }
+    });
+});
+</script>

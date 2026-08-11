@@ -44,11 +44,28 @@ function compileAjvValidator(props, allRequired) {
 // function and avoid importing an additional dependency.
 function compileValidator(props, allRequired) {
     function validator(json) {
+        validator.errors = [];
+
+        if (!json || typeof json !== "object") {
+            validator.errors = ["Invalid JSON object"];
+            return false;
+        }
+
         const expectedFieldsCount = Object.keys(props).length;
         const recievedFieldsCount = Object.keys(json).length;
         if (allRequired && recievedFieldsCount !== expectedFieldsCount) {
             validator.errors = [`Incorrect number of fields supplied: recieved ${recievedFieldsCount}; expected ${expectedFieldsCount}`];
             return false;
+        }
+
+        if (!allRequired) {
+            for (const key in props) {
+                const restrictions = props[key];
+                if (restrictions.required && !(key in json)) {
+                    validator.errors = [`Missing required field: ${key}`];
+                    return false;
+                }
+            }
         }
 
         for (const key in json) {
@@ -71,11 +88,22 @@ function compileValidator(props, allRequired) {
                     return false;
                 }
                 if (restrictions.maxLength !== undefined && value.length > restrictions.maxLength) {
-                    validator.errors = [`${key} must NOT be more than ${restrictions.minLength} characters long`];
+                    validator.errors = [`${key} must NOT be more than ${restrictions.maxLength} characters long`];
                     return false;
                 }
                 if (restrictions.pattern !== undefined && !restrictions.pattern.test(value)) {
                     validator.errors = [`${key} failed to match the pattern ${restrictions.pattern}`];
+                    return false;
+                }
+            }
+
+            if (restrictions.type === "number") {
+                if (restrictions.min !== undefined && value < restrictions.min) {
+                    validator.errors = [`${key} must be at least ${restrictions.min}`];
+                    return false;
+                }
+                if (restrictions.max !== undefined && value > restrictions.max) {
+                    validator.errors = [`${key} must NOT be more than ${restrictions.max}`];
                     return false;
                 }
             }
@@ -90,6 +118,128 @@ function compileValidator(props, allRequired) {
 const userLogin = compileValidator({ email, password }, true);
 
 const userSignup = compileValidator({ name, email, password }, true);
+
+const addOffer = compileValidator({
+    pickup_location: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    dropoff_location: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    pickup_time: {
+        type: "number",
+        min: 1,
+        required: true
+    },
+    dropoff_time: {
+        type: "number",
+        min: 1,
+        required: true
+    },
+    price: {
+        type: "number",
+        min: 0,
+        required: true
+    },
+    total_seats: {
+        type: "number",
+        min: 1,
+        required: true
+    },
+    notes: {
+        type: "string",
+        maxLength: 500,
+        required: false
+    }
+});
+
+const addRequest = compileValidator({
+    pickup_location: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    dropoff_location: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    pickup_timerange_start: {
+        type: "number",
+        min: 1,
+        required: true
+    },
+    pickup_timerange_end: {
+        type: "number",
+        min: 1,
+        required: true
+    },
+    price: {
+        type: "number",
+        min: 0,
+        required: false
+    },
+    notes: {
+        type: "string",
+        maxLength: 500,
+        required: false
+    }
+});
+
+const viewOffersQuery = compileValidator({
+    pickup_location: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64
+    },
+    dropoff_location: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64
+    },
+    pickup_time_start: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        pattern: /^[0-9]+$/
+    },
+    pickup_time_end: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        pattern: /^[0-9]+$/
+    },
+    dropoff_time_start: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        pattern: /^[0-9]+$/
+    },
+    dropoff_time_end: {
+        type: "string",
+        minLength: 0,
+        maxLength: 64,
+        pattern: /^[0-9]+$/
+    },
+    open: {
+        type: "string",
+        minLength: 4,
+        maxLength: 5,
+    },
+    closed: {
+        type: "string",
+        minLength: 4,
+        maxLength: 5,
+    }
+});
 
 const viewRequestsQuery = compileValidator({
     pickup_location: {
@@ -131,5 +281,8 @@ const viewRequestsQuery = compileValidator({
 module.exports = {
     userLogin,
     userSignup,
+    addOffer,
+    addRequest,
+    viewOffersQuery,
     viewRequestsQuery
 };

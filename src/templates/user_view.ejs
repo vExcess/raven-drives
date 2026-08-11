@@ -12,7 +12,8 @@
                         <div class="listing-details">
                             <h3><%= offer.pickup_location %> &rarr; <%= offer.dropoff_location %></h3>
                             <div class="listing-meta">
-                                <strong>Pickup:</strong> <%= utils.secondsToDateTimeString(offer.pickup_timerange_start) %> <br>
+                                <strong>Pickup:</strong> <%= utils.secondsToDateTimeString(offer.pickup_time) %><br>
+                                <strong>Dropoff:</strong> <%= utils.secondsToDateTimeString(offer.dropoff_time) %><br>
                                 <br>
                                 Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
                             </div>

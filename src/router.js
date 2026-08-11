@@ -102,7 +102,6 @@ const routeTree = {
         out.writeHead(200, {'Content-Type': 'text/html'});
         out.write(rendered);
     },
-
     "/user_view": async (path, out, data) => {
         let userData = data["userData"];
 
@@ -127,7 +126,6 @@ const routeTree = {
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
     },
-    //help page (in progress)
     "/help": async (path, out, data) => {
         const rendered = await renderPage("help", "Help", data);
 
@@ -285,8 +283,10 @@ const routeTree = {
                 let userData = data["userData"];
 
                 let validationErr = null;
-                if (!json || !json.pickup_location || !json.dropoff_location || !json.pickup_time || !json.price || !json.total_seats) {
-                    validationErr = "Error: Invalid offer data";
+                if (!validator.addOffer(json)) {
+                    validationErr = JSON.stringify(validator.addOffer.errors);
+                } else if (json.dropoff_time < json.pickup_time) {
+                    validationErr = JSON.stringify(["dropoff_time must be greater than pickup_time"]);
                 }
                 if (!userData || userData.status !== VERIFIED) {
                     validationErr = "Error: Only verified accounts can add offers";
@@ -300,10 +300,9 @@ const routeTree = {
 
                 const res = await dbInterface.addOffer(userData.id, json);
                 if (res.modifiedCount !== 1) {
-                    console.log(`Issue while adding offer ${userData.id} ${json}`, res);
+                    console.log(`Issue while adding offer ${userData.id} ${JSON.stringify(json)}`, res);
                 }
 
-                // res may be an auth token or an error message
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write("OK");
             },
@@ -312,8 +311,10 @@ const routeTree = {
                 let userData = data["userData"];
 
                 let validationErr = null;
-                if (!json || !json.pickup_location || !json.dropoff_location || !json.pickup_time || !json.dropoff_time || !json.price) {
-                    validationErr = "Error: Invalid request data";
+                if (!validator.addRequest(json)) {
+                    validationErr = JSON.stringify(validator.addRequest.errors);
+                } else if (json.pickup_timerange_end < json.pickup_timerange_start) {
+                    validationErr = JSON.stringify(["pickup_timerange_end must be greater than pickup_timerange_start"]);
                 }
                 if (!userData || userData.status !== VERIFIED) {
                     validationErr = "Error: Only verified accounts can add requests";
@@ -327,10 +328,9 @@ const routeTree = {
 
                 const res = await dbInterface.addRequest(userData.id, json);
                 if (res.modifiedCount !== 1) {
-                    console.log(`Issue while adding request ${userData.id} ${json}`, res);
+                    console.log(`Issue while adding request ${userData.id} ${JSON.stringify(json)}`, res);
                 }
 
-                // res may be an auth token or an error message
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write("OK");
             },
@@ -364,9 +364,8 @@ const routeTree = {
                 const query = urlParametersToJson(data.url);
 
                 let validationErr = null;
-                // for now the requests and offers filters are the same
-                if (!validator.viewRequestsQuery(query)) {
-                    validationErr = JSON.stringify(validator.viewRequestsQuery.errors);
+                if (!validator.viewOffersQuery(query)) {
+                    validationErr = JSON.stringify(validator.viewOffersQuery.errors);
                 }
 
                 if (validationErr !== null) {

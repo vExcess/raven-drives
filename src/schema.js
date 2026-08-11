@@ -19,7 +19,7 @@ users {
 
 reviews {
     id: string,
-    creator: int,
+    creator: string,
     about: int,
     rating: int,
     notes: string,
@@ -28,10 +28,11 @@ reviews {
 
 offers {
     id: string,
-    creator: int,
+    creator: string,
     pickupLocation: string,
     dropoffLocation: string,
     pickupTime: int,
+    dropoffTime: int,
     price: double,
     // passenger seat count; driver not included
     availableSeats: int,

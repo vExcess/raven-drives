@@ -15,13 +15,13 @@ List of what we need to do, and if it's done.
 
 ## Important ToDos
 - [ ] Application Functionality
-    - [ ] Home Page
-        [x] stylize ride stats to be better on mobile (desktop too idealy)
+    - [ ] Home Page  
+        - [x] stylize ride stats to be better on mobile (desktop too idealy)
     - [ ] Sign Up Page
         - make to redirect if already signed in?
     - [ ] Log In Page
         - make to redirect if already signed in?
-    - [ ] Dashboard
+    - [ ] Dashboard  
         - [ ] Page for users to see their open requests/offers and edit them or mark them as claimed/full (only able to edit before the pickup date)
     - [ ] Create Request Page
     - [ ] Create Offer Page

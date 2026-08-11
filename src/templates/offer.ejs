@@ -1,38 +1,74 @@
 <div class="centered-form-wrapper" style="width: fit-content; min-width: min(500px, 90vw); max-width: 95vw;">
     <h2 class="text-center w-100">Offer a Ride</h2>
-    <form action="/API/add_offer" method="post">
+    <form id="offer-form" action="/API/add_offer" method="post">
         <div>
             <label>Pickup Location</label>
-            <input type="text" name="pickup_location" placeholder="e.g. KC Airport" required>
+            <input type="text" name="pickup_location" id="pickup_location" placeholder="e.g. KC Airport" required>
         </div>
         <div>
             <label>Dropoff Location</label>
-            <input type="text" name="dropoff_location" placeholder="e.g. The Joe" required>
+            <input type="text" name="dropoff_location" id="dropoff_location" placeholder="e.g. The Joe" required>
         </div>
         <div style="display: flex; gap: 10px;">
             <div style="flex: 1;">
                 <label>Pickup Time</label>
-                <input type="datetime-local" name="pickup_time" required>
+                <input type="datetime-local" name="pickup_time" id="pickup_time" required>
             </div>
             <div style="flex: 1;">
                 <label>Dropoff Time</label>
-                <input type="datetime-local" name="dropoff_time" required>
+                <input type="datetime-local" name="dropoff_time" id="dropoff_time" required>
             </div>
         </div>
         <div>
             <label>Fee ($)</label>
-            <input type="number" name="price" min="0" placeholder="20" required>
+            <input type="number" name="price" id="price" min="0" placeholder="20" required>
         </div>
         <div>
             <label>Available Seats</label>
-            <input type="number" name="total_seats" min="1" placeholder="1" required>
+            <input type="number" name="total_seats" id="total_seats" min="1" placeholder="1" required>
         </div>
         <div>
             <label>Notes (optional)</label>
-            <textarea name="notes" placeholder="Clarify any details, like that you're willing to negotiate price for multiple passengers, or that you have a lot of trunk space"></textarea>
+            <textarea name="notes" id="notes" placeholder="Clarify any details, like that you're willing to negotiate price for multiple passengers, or that you have a lot of trunk space"></textarea>
         </div>
         <div style="text-align: center; margin-top: 10px;">
             <input type="submit" value="Post Offer" class="btn w-100">
         </div>
     </form>
+    <div style="margin-top: 20px; text-align: center; font-size: 0.9rem;">
+        <div id="form-error-message"></div>
+    </div>
 </div>
+
+<script>
+let offerForm = document.getElementById("offer-form");
+offerForm.addEventListener("submit", e => {
+    e.preventDefault();
+
+    const payload = {
+        pickup_location: document.getElementById("pickup_location").value,
+        dropoff_location: document.getElementById("dropoff_location").value,
+        pickup_time: timeStringToSeconds(document.getElementById("pickup_time").value),
+        dropoff_time: timeStringToSeconds(document.getElementById("dropoff_time").value),
+        price: Number(document.getElementById("price").value),
+        total_seats: Number(document.getElementById("total_seats").value),
+    };
+
+    const notes = document.getElementById("notes").value;
+    if (notes.length > 0) {
+        payload.notes = notes;
+    }
+
+    fetch("/API/add_offer", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    }).then(fetchMiddleware).then(res => {
+        if (!(typeof res === "string" && res.startsWith("Error: "))) {
+            window.location.href = "/user_view";
+        }
+    });
+});
+</script>

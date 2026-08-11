@@ -15,12 +15,20 @@
         <input id="dropoff_location" name="dropoff_location" type="text" value="">
         <br>
 
-        <label for="pickup_timerange_start">Pickup TimeRange Start</label>
-        <input id="pickup_timerange_start" name="pickup_timerange_start" type="datetime-local">
+        <label for="pickup_time_start">Pickup After</label>
+        <input id="pickup_time_start" name="pickup_time_start" type="datetime-local">
         <br>
 
-        <label for="pickup_timerange_end">Pickup TimeRange End</label>
-        <input id="pickup_timerange_end" name="pickup_timerange_end" type="datetime-local">
+        <label for="pickup_time_end">Pickup Before</label>
+        <input id="pickup_time_end" name="pickup_time_end" type="datetime-local">
+        <br>
+
+        <label for="dropoff_time_start">Dropoff After</label>
+        <input id="dropoff_time_start" name="dropoff_time_start" type="datetime-local">
+        <br>
+
+        <label for="dropoff_time_end">Dropoff Before</label>
+        <input id="dropoff_time_end" name="dropoff_time_end" type="datetime-local">
         <br>
 
         <div class="checkbox-group">
@@ -85,6 +93,7 @@ function renderOffers(offers) {
             let pickup_location = escape(offer['pickup_location']),
                 dropoff_location = escape(offer['dropoff_location']),
                 pickup_time = escape(secondsToDateTimeString(offer['pickup_time'])),
+                dropoff_time = escape(secondsToDateTimeString(offer['dropoff_time'])),
                 total_seats = escape(offer['total_seats']),
                 available_seats = escape(offer['available_seats']),
                 creator_name = escape(offer['creator_name']),
@@ -92,7 +101,7 @@ function renderOffers(offers) {
                 price = escape(offer['price'] ? "$"+offer['price'] : "");
             
             if (!loggedIn) {
-                pickup_timerange_start = pickup_timerange_end = "Login to view time data";
+                pickup_time = dropoff_time = "Login to view time data";
                 creator_name = "Login to view client information";
             }
 
@@ -100,9 +109,14 @@ function renderOffers(offers) {
                 <div class="listing-details">
                     <h3>${ pickup_location } &rarr; ${ dropoff_location }</h3>
                     <div class="listing-meta">
-                        <strong>Pickup:</strong> ${ pickup_time }<br>
+                        <strong>Pickup:</strong> ${ pickup_time }
                         <br>
-                        <strong>Total Seats:</strong> ${ total_seats }<strong>Available Seats:</strong> ${ available_seats }
+                        <strong>Dropoff:</strong> ${ dropoff_time }
+                        <br>
+                        <strong>Available Seats:</strong> ${ available_seats }
+                        <br>
+                        <strong>Total Seats:</strong> ${ total_seats }
+                        <br><br>
                         <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
                 </div>
@@ -119,8 +133,10 @@ function renderOffers(offers) {
 const filtersForm = document.getElementById("filters");
 const pickup_locationEl = document.getElementById("pickup_location");
 const dropoff_locationEl = document.getElementById("dropoff_location");
-const pickup_timerange_startEl = document.getElementById("pickup_timerange_start");
-const pickup_timerange_endEl = document.getElementById("pickup_timerange_end");
+const pickup_time_startEl = document.getElementById("pickup_time_start");
+const pickup_time_endEl = document.getElementById("pickup_time_end");
+const dropoff_time_startEl = document.getElementById("dropoff_time_start");
+const dropoff_time_endEl = document.getElementById("dropoff_time_end");
 const openEl = document.getElementById("open");
 const closedEl = document.getElementById("closed");
 
@@ -128,8 +144,10 @@ function updateResults() {
     let queryParameters = {
         pickup_location: pickup_locationEl.value,
         dropoff_location: dropoff_locationEl.value,
-        pickup_timerange_start: timeStringToSeconds(pickup_timerange_startEl.value),
-        pickup_timerange_end: timeStringToSeconds(pickup_timerange_endEl.value),
+        pickup_time_start: timeStringToSeconds(pickup_time_startEl.value),
+        pickup_time_end: timeStringToSeconds(pickup_time_endEl.value),
+        dropoff_time_start: timeStringToSeconds(dropoff_time_startEl.value),
+        dropoff_time_end: timeStringToSeconds(dropoff_time_endEl.value),
         open: openEl.checked,
         closed: closedEl.checked
     };

@@ -137,6 +137,7 @@ async function addOffer(userID, data) {
         pickupLocation: data.pickup_location,
         dropoffLocation: data.dropoff_location,
         pickupTime: data.pickup_time,
+        dropoffTime: data.dropoff_time,
         price: data.price,
         // unclaimed passenger seats
         availableSeats: data.total_seats,
@@ -145,7 +146,7 @@ async function addOffer(userID, data) {
         usersServing: [],
         // 0=open
         status: OPEN,
-        notes: data.notes,
+        notes: data.notes ?? "",
         timestamp: nowSeconds(),
     });
 }
@@ -157,10 +158,10 @@ async function addRequest(userID, data) {
         creator: userID,
         pickup_location: data.pickup_location,
         dropoff_location: data.dropoff_location,
-        pickup_timerange_start: data.pickup_time,
-        pickup_timerange_end: data.dropoff_time,
-        price: data.price,
-        notes: data.notes,
+        pickup_timerange_start: data.pickup_timerange_start,
+        pickup_timerange_end: data.pickup_timerange_end,
+        price: data.price ?? 0,
+        notes: data.notes ?? "",
         status: OPEN,
         timestamp: nowSeconds(),
     });
@@ -180,6 +181,7 @@ async function getOffers(options) {
         pickup_location: "$pickupLocation",
         dropoff_location: "$dropoffLocation",
         pickup_time: "$pickupTime",
+        dropoff_time: "$dropoffTime",
         price: 1,
         available_seats: "$availableSeats",
         total_seats: "$totalSeats",
@@ -206,24 +208,34 @@ async function getOffers(options) {
         queryFilter.status = { $in: statusFilters };
     }
 
-    // match if any part of the offer pickup range is within the search range
-    if (query.pickup_timerange_start) {
-        queryFilter.pickup_timerange_end = { $gte: Number(query.pickup_timerange_start) };
+    // match if offer pickup/dropoff times fall within the search range
+    if (query.pickup_time_start) {
+        queryFilter.pickupTime = queryFilter.pickupTime ?? {};
+        queryFilter.pickupTime.$gte = Number(query.pickup_time_start);
     }
-    if (query.pickup_timerange_end) {
-        queryFilter.pickup_timerange_start = { $lte: Number(query.pickup_timerange_end) };
+    if (query.pickup_time_end) {
+        queryFilter.pickupTime = queryFilter.pickupTime ?? {};
+        queryFilter.pickupTime.$lte = Number(query.pickup_time_end);
+    }
+    if (query.dropoff_time_start) {
+        queryFilter.dropoffTime = queryFilter.dropoffTime ?? {};
+        queryFilter.dropoffTime.$gte = Number(query.dropoff_time_start);
+    }
+    if (query.dropoff_time_end) {
+        queryFilter.dropoffTime = queryFilter.dropoffTime ?? {};
+        queryFilter.dropoffTime.$lte = Number(query.dropoff_time_end);
     }
 
     // i option means the search is case-insensitive
     // TODO: prevent regex injection
     if (query.pickup_location) {
-        queryFilter.pickup_location = { 
+        queryFilter.pickupLocation = { 
             $regex: RegExp.escape(query.pickup_location),
             $options: 'i' 
         };
     }
     if (query.dropoff_location) {
-        queryFilter.dropoff_location = { 
+        queryFilter.dropoffLocation = { 
             $regex: RegExp.escape(query.dropoff_location),
             $options: 'i' 
         };
@@ -234,8 +246,8 @@ async function getOffers(options) {
         .aggregate([
             // SELECT FROM offers WHERE status == "open"
             { $match: queryFilter },
-            // ORDER BY pickup_timerange_start DESC
-            { $sort: { pickup_timerange_start: 1 } },
+            // ORDER BY pickupTime ASC
+            { $sort: { pickupTime: 1 } },
             // offers JOIN users ON offers.creator == users.id
             {
                 $lookup: {
