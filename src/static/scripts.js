@@ -168,3 +168,9 @@ function timeStringToSeconds(timeStr) {
     if (timeStr.length === 0) return "";
     return Math.round(new Date(timeStr).valueOf() / 1000);
 }
+
+function secondsToDatetimeLocalValue(seconds) {
+    const date = new Date(seconds * 1000);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}

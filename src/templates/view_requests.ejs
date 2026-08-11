@@ -66,6 +66,17 @@ function renderErrorWrapper(err) {
     renderError(err.toString().replace("Error: ", ""));
 }
 
+function offerForRequest(request) {
+    sessionStorage.setItem("offerPrefill", JSON.stringify({
+        pickup_location: request.pickup_location,
+        dropoff_location: request.dropoff_location,
+        pickup_time: request.pickup_timerange_start,
+        pickup_timerange_end: request.pickup_timerange_end,
+        price: request.price > 0 ? request.price : "",
+    }));
+    window.location.href = "/offer";
+}
+
 function renderRequests(requests) {
     titleh1.innerText = "Open Requests";
 
@@ -95,7 +106,14 @@ function renderRequests(requests) {
                 creator_name = "Login to view client information";
             }
 
-            el.innerHTML = `<div class="listing-card">
+            let actionHtml = "";
+            if (!loggedIn) {
+                actionHtml = `<a href="/login" class="btn btn-small">Login to offer a ride</a>`;
+            } else if (request.status === 0) {
+                actionHtml = `<button type="button" class="btn btn-small offer-for-request-btn">Offer<br>Ride</button>`;
+            }
+
+            el.innerHTML = `<div class="listing-card listing-card--actionable">
                 <div class="listing-details">
                     <h3>${ pickup_location } &rarr; ${ dropoff_location }</h3>
                     <div class="listing-meta">
@@ -107,10 +125,18 @@ function renderRequests(requests) {
                         <small>Posted by: ${ creator_name } (<a href="mailto:${ creator_email }">Contact</a>)</small>
                     </div>
                 </div>
-                <div class="listing-price">
-                    ${ price }
+                <div class="listing-actions">
+                    <div class="listing-price">
+                        ${ price }
+                    </div>
+                    ${ actionHtml }
                 </div>
             </div>`;
+
+            const offerBtn = el.querySelector(".offer-for-request-btn");
+            if (offerBtn) {
+                offerBtn.addEventListener("click", () => offerForRequest(request));
+            }
 
             listingContainer.append(el);
         });

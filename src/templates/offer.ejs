@@ -1,5 +1,6 @@
 <div class="centered-form-wrapper" style="width: fit-content; min-width: min(500px, 90vw); max-width: 95vw;">
     <h2 class="text-center w-100">Offer a Ride</h2>
+    <div id="offer-prefill-banner" class="offer-prefill-banner" style="display: none;"></div>
     <form id="offer-form" action="/API/add_offer" method="post">
         <div>
             <label>Pickup Location</label>
@@ -41,6 +42,33 @@
 </div>
 
 <script>
+const prefillRaw = sessionStorage.getItem("offerPrefill");
+if (prefillRaw) {
+    sessionStorage.removeItem("offerPrefill");
+    try {
+        const prefill = JSON.parse(prefillRaw);
+        document.getElementById("pickup_location").value = prefill.pickup_location ?? "";
+        document.getElementById("dropoff_location").value = prefill.dropoff_location ?? "";
+        if (prefill.pickup_time) {
+            document.getElementById("pickup_time").value = secondsToDatetimeLocalValue(prefill.pickup_time);
+        }
+        if (prefill.price !== "" && prefill.price != null) {
+            document.getElementById("price").value = prefill.price;
+        }
+        document.getElementById("total_seats").value = prefill.total_seats ?? 1;
+
+        const banner = document.getElementById("offer-prefill-banner");
+        if (prefill.pickup_time && prefill.pickup_timerange_end) {
+            const startStr = secondsToDateTimeString(prefill.pickup_time);
+            const endStr = secondsToDateTimeString(prefill.pickup_timerange_end);
+            banner.textContent = `Matching a ride request — rider is available for pickup between ${startStr} and ${endStr}. Finalize details before posting.`;
+            banner.style.display = "block";
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
 let offerForm = document.getElementById("offer-form");
 offerForm.addEventListener("submit", e => {
     e.preventDefault();
