@@ -97,6 +97,31 @@
         font-style: normal;
         text-transform: none;
     }
+
+    .request-price-form {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+        min-width: 120px;
+    }
+
+    .request-price-form label {
+        margin-bottom: 0;
+        font-size: 0.75rem;
+    }
+
+    .request-price-form input[type="number"] {
+        width: 100px;
+        padding: 8px;
+        text-align: right;
+    }
+
+    .price-save-status {
+        font-size: 0.8rem;
+        color: #4caf50;
+        min-height: 1em;
+    }
 </style>
 
 <div class="dashboard-page">
@@ -221,9 +246,20 @@
                                 <% } %>
                             </div>
                             <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <div class="listing-price">
-                                    $<%= req.price %>
-                                </div>
+                                <form class="request-price-form" data-request-id="<%= req.id %>">
+                                    <label for="request-price-<%= req.id %>">Offer ($)</label>
+                                    <input
+                                        type="number"
+                                        id="request-price-<%= req.id %>"
+                                        class="request-price-input"
+                                        min="0"
+                                        step="0.01"
+                                        value="<%= req.price %>"
+                                        required
+                                    >
+                                    <button type="submit" class="btn btn-small">Save Price</button>
+                                    <span class="price-save-status"></span>
+                                </form>
                                 <div style="margin-top: 10px;">
                                     <% if (isOpen) { %>
                                         <a href="/update_request_status?request_id=<%= req.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
@@ -241,3 +277,36 @@
         </div>
     </div>
 </div>
+
+<script>
+document.querySelectorAll(".request-price-form").forEach(form => {
+    form.addEventListener("submit", e => {
+        e.preventDefault();
+
+        const statusEl = form.querySelector(".price-save-status");
+        const priceInput = form.querySelector(".request-price-input");
+        const price = Number(priceInput.value);
+
+        statusEl.textContent = "";
+
+        fetch("/API/update_request_price", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                request_id: form.dataset.requestId,
+                price
+            })
+        }).then(fetchMiddleware).then(res => {
+            if (typeof res === "string" && res.startsWith("Error: ")) {
+                return;
+            }
+            statusEl.textContent = "Saved";
+            setTimeout(() => {
+                statusEl.textContent = "";
+            }, 2000);
+        });
+    });
+});
+</script>

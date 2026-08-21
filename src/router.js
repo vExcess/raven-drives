@@ -394,6 +394,34 @@ const routeTree = {
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write("OK");
             },
+            "update_request_price": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+                let userData = data["userData"];
+
+                let validationErr = null;
+                if (!validator.updateRequestPrice(json)) {
+                    validationErr = JSON.stringify(validator.updateRequestPrice.errors);
+                }
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can update requests";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbInterface.updateRequestPrice(userData.id, json.request_id, json.price);
+                if (res.modifiedCount !== 1) {
+                    out.writeHead(403);
+                    out.write("Error: Request not found");
+                    return;
+                }
+
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
         },
         ":GET:": {
             "requests": async (path, out, data) => {

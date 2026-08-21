@@ -171,6 +171,14 @@ async function updateRequestStatus(userId, requestId, status) {
     );
 }
 
+async function updateRequestPrice(userId, requestId, price) {
+    await ready.promise;
+    return await requests.updateOne(
+        { id: requestId, creator: userId },
+        { $set: { price } }
+    );
+}
+
 async function addOffer(userID, data) {
     await ready.promise;
     return await offers.insertOne({
@@ -576,6 +584,7 @@ module.exports = {
     getUserRequests,
     updateOfferStatus,
     updateRequestStatus,
+    updateRequestPrice,
     getRidesProvidedCount,
     addRequest,
     addOffer,

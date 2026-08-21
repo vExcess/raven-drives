@@ -241,6 +241,20 @@ const viewOffersQuery = compileValidator({
     }
 });
 
+const updateRequestPrice = compileValidator({
+    request_id: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    price: {
+        type: "number",
+        min: 0,
+        required: true
+    }
+});
+
 const viewRequestsQuery = compileValidator({
     pickup_location: {
         type: "string",
@@ -283,6 +297,7 @@ module.exports = {
     userSignup,
     addOffer,
     addRequest,
+    updateRequestPrice,
     viewOffersQuery,
     viewRequestsQuery
 };
