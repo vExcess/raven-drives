@@ -1,0 +1,243 @@
+<style>
+    .container {
+        justify-content: flex-start;
+        align-items: stretch;
+    }
+
+    .dashboard-page {
+        width: 100%;
+        max-width: 1100px;
+    }
+
+    .account-summary {
+        background-color: var(--card-bg);
+        border-left: 5px solid var(--racing-red);
+        border-radius: var(--border-radius);
+        padding: 24px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .account-summary h1 {
+        margin-top: 0;
+    }
+
+    .account-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-top: 20px;
+    }
+
+    .account-stat {
+        background-color: var(--input-bg);
+        border: 1px solid #333;
+        border-radius: var(--border-radius);
+        padding: 16px;
+    }
+
+    .account-stat-label {
+        color: #aaa;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .account-stat-value {
+        font-size: 1.4rem;
+        font-weight: bold;
+    }
+
+    .status-verified {
+        color: #4caf50;
+    }
+
+    .status-unverified {
+        color: #ffb347;
+    }
+
+    .status-suspended {
+        color: #ff6666;
+    }
+
+    .dashboard-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .col {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .btn-small {
+        padding: 5px 10px;
+        font-size: 0.9em;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .section-count {
+        color: #aaa;
+        font-size: 0.95rem;
+        font-style: normal;
+        text-transform: none;
+    }
+</style>
+
+<div class="dashboard-page">
+    <div class="account-summary">
+        <h1>My Dashboard</h1>
+        <p>Welcome back, <%= userData.name %>.</p>
+
+        <div class="account-meta">
+            <div class="account-stat">
+                <div class="account-stat-label">Email</div>
+                <div class="account-stat-value" style="font-size: 1rem; word-break: break-word;"><%= userData.email %></div>
+            </div>
+            <div class="account-stat">
+                <div class="account-stat-label">Account Status</div>
+                <div class="account-stat-value">
+                    <% if (userData.status === VERIFIED) { %>
+                        <span class="status-verified">Verified</span>
+                    <% } else if (userData.status === UNVERIFIED) { %>
+                        <span class="status-unverified">Unverified</span>
+                    <% } else { %>
+                        <span class="status-suspended">Suspended</span>
+                    <% } %>
+                </div>
+            </div>
+            <div class="account-stat">
+                <div class="account-stat-label">Rating</div>
+                <div class="account-stat-value"><%= userData.rating > 0 ? userData.rating.toFixed(1) : "No ratings yet" %></div>
+            </div>
+            <div class="account-stat">
+                <div class="account-stat-label">Member Since</div>
+                <div class="account-stat-value" style="font-size: 1rem;"><%= utils.secondsToDateTimeString(userData.timestamp) %></div>
+            </div>
+            <div class="account-stat">
+                <div class="account-stat-label">Open Offers</div>
+                <div class="account-stat-value"><%= openOffersCount %></div>
+            </div>
+            <div class="account-stat">
+                <div class="account-stat-label">Open Requests</div>
+                <div class="account-stat-value"><%= openRequestsCount %></div>
+            </div>
+        </div>
+
+        <div class="dashboard-actions">
+            <a href="/offer" class="btn">Post an Offer</a>
+            <a href="/request" class="btn">Request a Ride</a>
+            <a href="/view_offers" class="btn" style="background-color: #555;">Browse Offers</a>
+            <a href="/view_requests" class="btn" style="background-color: #555;">Browse Requests</a>
+            <% if (userData.status === UNVERIFIED) { %>
+                <a href="/confirm_email" class="btn">Verify Email</a>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="section-header">
+                <h2>My Offers</h2>
+                <span class="section-count"><%= offers.length %> total, <%= openOffersCount %> open</span>
+            </div>
+            <div class="listing-container">
+                <% if (offers.length > 0) { %>
+                    <% for (const offer of offers) { %>
+                        <% const isOpen = offer.status === 0; %>
+                        <div class="listing-card" style="opacity: <%= isOpen ? "1" : "0.6" %>;">
+                            <div class="listing-details">
+                                <h3><%= offer.pickup_location %> &rarr; <%= offer.dropoff_location %></h3>
+                                <div class="listing-meta">
+                                    <strong>Pickup:</strong> <%= utils.secondsToDateTimeString(offer.pickup_time) %><br>
+                                    <strong>Dropoff:</strong> <%= utils.secondsToDateTimeString(offer.dropoff_time) %><br>
+                                    <strong>Seats:</strong> <%= offer.available_seats %> / <%= offer.total_seats %> available<br>
+                                    <strong>Posted:</strong> <%= utils.secondsToDateTimeString(offer.timestamp) %><br>
+                                    Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
+                                </div>
+                                <% if (offer.notes) { %>
+                                    <div class="listing-notes">
+                                        <span class="notes-text"><%= offer.notes %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <div class="listing-price">
+                                    $<%= offer.price %>
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <% if (isOpen) { %>
+                                        <a href="/update_offer_status?offer_id=<%= offer.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
+                                    <% } else { %>
+                                        <a href="/update_offer_status?offer_id=<%= offer.id %>&status=open" class="btn btn-small">Open</a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <p>You haven't posted any offers yet.</p>
+                <% } %>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="section-header">
+                <h2>My Requests</h2>
+                <span class="section-count"><%= requests.length %> total, <%= openRequestsCount %> open</span>
+            </div>
+            <div class="listing-container">
+                <% if (requests.length > 0) { %>
+                    <% for (const req of requests) { %>
+                        <% const isOpen = req.status === 0; %>
+                        <div class="listing-card" style="opacity: <%= isOpen ? "1" : "0.6" %>;">
+                            <div class="listing-details">
+                                <h3><%= req.pickup_location %> &rarr; <%= req.dropoff_location %></h3>
+                                <div class="listing-meta">
+                                    <strong>Pickup window:</strong> <%= utils.secondsToDateTimeString(req.pickup_timerange_start) %>
+                                    &ndash; <%= utils.secondsToDateTimeString(req.pickup_timerange_end) %><br>
+                                    <strong>Posted:</strong> <%= utils.secondsToDateTimeString(req.timestamp) %><br>
+                                    Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
+                                </div>
+                                <% if (req.notes) { %>
+                                    <div class="listing-notes">
+                                        <span class="notes-text"><%= req.notes %></span>
+                                    </div>
+                                <% } %>
+                            </div>
+                            <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
+                                <div class="listing-price">
+                                    $<%= req.price %>
+                                </div>
+                                <div style="margin-top: 10px;">
+                                    <% if (isOpen) { %>
+                                        <a href="/update_request_status?request_id=<%= req.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
+                                    <% } else { %>
+                                        <a href="/update_request_status?request_id=<%= req.id %>&status=open" class="btn btn-small">Open</a>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                <% } else { %>
+                    <p>You haven't posted any requests yet.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>

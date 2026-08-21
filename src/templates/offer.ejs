@@ -95,7 +95,7 @@ offerForm.addEventListener("submit", e => {
         body: JSON.stringify(payload)
     }).then(fetchMiddleware).then(res => {
         if (!(typeof res === "string" && res.startsWith("Error: "))) {
-            window.location.href = "/user_view";
+            window.location.href = "/dashboard";
         }
     });
 });

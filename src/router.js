@@ -13,7 +13,7 @@ const { nowSeconds, parseJSON, urlFileExt, extMimeType, urlParametersToJson } = 
 
 const validator = require("./validator");
 
-const { OPEN, BANNED, UNVERIFIED, VERIFIED } = dbInterface;
+const { OPEN, CLOSED, BANNED, UNVERIFIED, VERIFIED } = dbInterface;
 
 function renderEJS(template, data) {
     return ejs.renderFile(`./src/templates/${template}.ejs`, data);
@@ -35,7 +35,7 @@ async function updateStats() {
     openOffersCount = (await dbInterface.getOffers({
         query: { open: "true" }
     })).length;
-    ridesProvidedCount = 12345;
+    ridesProvidedCount = await dbInterface.getRidesProvidedCount();
 }
 
 // update stats every minute
@@ -102,7 +102,7 @@ const routeTree = {
         out.writeHead(200, {'Content-Type': 'text/html'});
         out.write(rendered);
     },
-    "/user_view": async (path, out, data) => {
+    "/dashboard": async (path, out, data) => {
         let userData = data["userData"];
 
         if (!userData) {
@@ -111,20 +111,80 @@ const routeTree = {
             return;
         }
 
-        let offers = await dbInterface.getOffers({
-            authenticated: true,
-            query: { open: "true" }
-        });
-        let requests = await dbInterface.getRequests({
-            authenticated: true,
-            query: { open: "true" }
-        });
-        const rendered = await renderPage("user_view", "My Dashboard", {
-            ...data, offers, requests, utils
+        const offers = await dbInterface.getUserOffers(userData.id);
+        const requests = await dbInterface.getUserRequests(userData.id);
+        const openOffersCount = offers.filter(offer => offer.status === OPEN).length;
+        const openRequestsCount = requests.filter(request => request.status === OPEN).length;
+
+        const rendered = await renderPage("dashboard", "My Dashboard", {
+            ...data,
+            offers,
+            requests,
+            openOffersCount,
+            openRequestsCount,
+            VERIFIED,
+            UNVERIFIED,
+            utils
         });
         
         out.writeHead(200, { 'Content-Type': 'text/html' });
         out.write(rendered);
+    },
+    "/update_offer_status": async (path, out, data) => {
+        let userData = data["userData"];
+
+        if (!userData) {
+            out.writeHead(302, { "Location": "/login" });
+            out.write("Redirecting...");
+            return;
+        }
+
+        const params = urlParametersToJson(data.url);
+        const status = params.status === "open" ? OPEN : params.status === "closed" ? CLOSED : null;
+
+        if (!params.offer_id || status === null) {
+            out.writeHead(400);
+            out.write("Invalid request");
+            return;
+        }
+
+        const res = await dbInterface.updateOfferStatus(userData.id, params.offer_id, status);
+        if (res.modifiedCount !== 1) {
+            out.writeHead(403);
+            out.write("Offer not found");
+            return;
+        }
+
+        out.writeHead(302, { "Location": "/dashboard" });
+        out.write("Redirecting...");
+    },
+    "/update_request_status": async (path, out, data) => {
+        let userData = data["userData"];
+
+        if (!userData) {
+            out.writeHead(302, { "Location": "/login" });
+            out.write("Redirecting...");
+            return;
+        }
+
+        const params = urlParametersToJson(data.url);
+        const status = params.status === "open" ? OPEN : params.status === "closed" ? CLOSED : null;
+
+        if (!params.request_id || status === null) {
+            out.writeHead(400);
+            out.write("Invalid request");
+            return;
+        }
+
+        const res = await dbInterface.updateRequestStatus(userData.id, params.request_id, status);
+        if (res.modifiedCount !== 1) {
+            out.writeHead(403);
+            out.write("Request not found");
+            return;
+        }
+
+        out.writeHead(302, { "Location": "/dashboard" });
+        out.write("Redirecting...");
     },
     "/help": async (path, out, data) => {
         const rendered = await renderPage("help", "Help", data);

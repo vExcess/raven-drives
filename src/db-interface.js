@@ -105,28 +105,70 @@ async function connect() {
     ready.resolve(true);
 }
 
-async function getUserOffers(id) {
+async function getUserOffers(userId) {
     await ready.promise;
-    return await offers.find({ creator: id });
+    return await offers
+        .aggregate([
+            { $match: { creator: userId } },
+            { $sort: { timestamp: -1 } },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    pickup_location: "$pickupLocation",
+                    dropoff_location: "$dropoffLocation",
+                    pickup_time: "$pickupTime",
+                    dropoff_time: "$dropoffTime",
+                    price: 1,
+                    available_seats: "$availableSeats",
+                    total_seats: "$totalSeats",
+                    notes: 1,
+                    status: 1,
+                    timestamp: 1,
+                }
+            }
+        ])
+        .toArray();
 }
 
-async function getUserRequests(id) {
+async function getUserRequests(userId) {
     await ready.promise;
-    return await requests.find({ creator: id });
+    return await requests
+        .aggregate([
+            { $match: { creator: userId } },
+            { $sort: { timestamp: -1 } },
+            {
+                $project: {
+                    _id: 0,
+                    id: 1,
+                    pickup_location: 1,
+                    dropoff_location: 1,
+                    pickup_timerange_start: 1,
+                    pickup_timerange_end: 1,
+                    price: 1,
+                    notes: 1,
+                    status: 1,
+                    timestamp: 1,
+                }
+            }
+        ])
+        .toArray();
 }
 
-async function updateOfferStatus(id, status) {
+async function updateOfferStatus(userId, offerId, status) {
     await ready.promise;
-    return await offers.updateOne({ id }, {$set: {
-        status: status
-    }});
+    return await offers.updateOne(
+        { id: offerId, creator: userId },
+        { $set: { status } }
+    );
 }
 
-async function updateRequestStatus(id, status) {
+async function updateRequestStatus(userId, requestId, status) {
     await ready.promise;
-    return await requests.updateOne({ id }, {$set: {
-        status: status
-    }});
+    return await requests.updateOne(
+        { id: requestId, creator: userId },
+        { $set: { status } }
+    );
 }
 
 async function addOffer(userID, data) {
@@ -499,6 +541,20 @@ async function loadTestData() {
     console.log("TEST DATA LOADED");
 }
 
+async function getRidesProvidedCount() {
+    await ready.promise;
+
+    const result = await offers.aggregate([
+        {
+            $group: {
+                _id: null,
+                count: { $sum: { $subtract: ["$totalSeats", "$availableSeats"] } }
+            }
+        }
+    ]).toArray();
+    return result[0]?.count ?? 0;
+}
+
 module.exports = {
     OPEN,
     CLOSED,
@@ -516,6 +572,11 @@ module.exports = {
     confirmEmail,
     getRequests,
     getOffers,
+    getUserOffers,
+    getUserRequests,
+    updateOfferStatus,
+    updateRequestStatus,
+    getRidesProvidedCount,
     addRequest,
     addOffer,
 };

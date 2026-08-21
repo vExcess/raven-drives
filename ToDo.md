@@ -1,34 +1,19 @@
 # To-Do
 List of what we need to do, and if it's done.
 
-## In Progress
-- [ ] Data sanitization
-    - [ ] Verify that all input fulfills field requirements
-    - [ ] prevent Regex DOS attacks on DB queries
-    - [ ] prevent queries from reading more data from db than allowed
-        - for MongDB this means validating that input is of type string instead of object (part of verifying input matches field requirements)
-    - [ ] prevent XSS attacks on the client
-        - use `<%=` where appropriate in EJS templates
-        - use `escape()` when setting .innerHTML
-    - ensure db queries can't overwrite existing data that it shouldn't
-- [ ] Finalize database structure
-
-## Important ToDos
+## ToDos
 - [ ] Application Functionality
-    - [ ] Home Page  
+    - [x] Home Page  
         - [x] stylize ride stats to be better on mobile (desktop too idealy)
-    - [ ] Sign Up Page
-        - make to redirect if already signed in?
-    - [ ] Log In Page
-        - make to redirect if already signed in?
+    - [x] Sign Up Page
+    - [x] Log In Page
     - [ ] Dashboard  
         - [ ] Page for users to see their open requests/offers and edit them or mark them as claimed/full (only able to edit before the pickup date)
-    - [ ] Create Request Page
-    - [ ] Create Offer Page
-    - [ ] Search Requests Page
-    - [ ] Search Offers Page
-    - [ ] Implement connections logic
-    - [ ] Create chat feature
+    - [x] Create Request Page
+    - [x] Create Offer Page
+    - [x] Search Requests Page
+    - [x] Search Offers Page
+    - [ ] ?Create chat feature?
     - [ ] Create email notifications for rides?
 
 - [ ] Accessability
@@ -52,10 +37,23 @@ List of what we need to do, and if it's done.
 
 - [ ] Capture analytics data to present on discovery day
 
+- [ ] Data sanitization
+    - [ ] Verify that all input fulfills field requirements
+    - [ ] prevent Regex DOS attacks on DB queries
+    - [ ] prevent queries from reading more data from db than allowed
+        - for MongDB this means validating that input is of type string instead of object (part of verifying input matches field requirements)
+    - [ ] prevent XSS attacks on the client
+        - use `<%=` where appropriate in EJS templates
+        - use `escape()` when setting .innerHTML
+    - ensure db queries can't overwrite existing data that it shouldn't
+- [ ] Finalize database structure
+
 ## Less Important ToDos
 - [ ] New Logo
 
-- [ ] Let users put notes on their requests/offers
+- [ ] make signup page to redirect if already signed in?
+
+- [ ] make login page to redirect if already signed in?
 
 - [ ] Potentially migrate to MySQL/MariaDB or Postgres 
     - the IT department has experience with MySQL so it would make hosting easier for them
@@ -69,3 +67,5 @@ List of what we need to do, and if it's done.
 Move stuff to this section once it's no longer relevant
 
 - [x] Make To-Do List
+
+- [x] Let users put notes on their requests/offers
