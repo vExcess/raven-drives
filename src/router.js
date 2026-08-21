@@ -422,6 +422,97 @@ const routeTree = {
                 out.writeHead(200, { "Content-Type": "text/plain" });
                 out.write("OK");
             },
+            "update_offer_available_seats": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+                let userData = data["userData"];
+
+                let validationErr = null;
+                if (!validator.updateOfferAvailableSeats(json)) {
+                    validationErr = JSON.stringify(validator.updateOfferAvailableSeats.errors);
+                } else if (!Number.isInteger(json.available_seats)) {
+                    validationErr = JSON.stringify(["available_seats must be an integer"]);
+                }
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can update offers";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbInterface.updateOfferAvailableSeats(userData.id, json.offer_id, json.available_seats);
+                if (res.error) {
+                    out.writeHead(400);
+                    out.write(res.error);
+                    return;
+                }
+                if (res.modifiedCount !== 1) {
+                    out.writeHead(403);
+                    out.write("Error: Offer not found");
+                    return;
+                }
+
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
+            "update_offer_notes": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+                let userData = data["userData"];
+
+                let validationErr = null;
+                if (!validator.updateOfferNotes(json)) {
+                    validationErr = JSON.stringify(validator.updateOfferNotes.errors);
+                }
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can update offers";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbInterface.updateOfferNotes(userData.id, json.offer_id, json.notes);
+                if (res.modifiedCount !== 1) {
+                    out.writeHead(403);
+                    out.write("Error: Offer not found");
+                    return;
+                }
+
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
+            "update_request_notes": async (path, out, data) => {
+                let json = parseJSON(data.postBody);
+                let userData = data["userData"];
+
+                let validationErr = null;
+                if (!validator.updateRequestNotes(json)) {
+                    validationErr = JSON.stringify(validator.updateRequestNotes.errors);
+                }
+                if (!userData || userData.status !== VERIFIED) {
+                    validationErr = "Error: Only verified accounts can update requests";
+                }
+
+                if (validationErr !== null) {
+                    out.writeHead(400);
+                    out.write(validationErr);
+                    return;
+                }
+
+                const res = await dbInterface.updateRequestNotes(userData.id, json.request_id, json.notes);
+                if (res.modifiedCount !== 1) {
+                    out.writeHead(403);
+                    out.write("Error: Request not found");
+                    return;
+                }
+
+                out.writeHead(200, { "Content-Type": "text/plain" });
+                out.write("OK");
+            },
         },
         ":GET:": {
             "requests": async (path, out, data) => {

@@ -179,6 +179,42 @@ async function updateRequestPrice(userId, requestId, price) {
     );
 }
 
+async function updateOfferAvailableSeats(userId, offerId, availableSeats) {
+    await ready.promise;
+    const offer = await offers.findOne({ id: offerId, creator: userId });
+    if (!offer) {
+        return { modifiedCount: 0 };
+    }
+
+    if (!Number.isInteger(availableSeats) || availableSeats > offer.totalSeats) {
+        return {
+            modifiedCount: 0,
+            error: `Available seats must be integer between 0 and ${offer.totalSeats}`
+        };
+    }
+
+    return await offers.updateOne(
+        { id: offerId, creator: userId },
+        { $set: { availableSeats } }
+    );
+}
+
+async function updateOfferNotes(userId, offerId, notes) {
+    await ready.promise;
+    return await offers.updateOne(
+        { id: offerId, creator: userId },
+        { $set: { notes } }
+    );
+}
+
+async function updateRequestNotes(userId, requestId, notes) {
+    await ready.promise;
+    return await requests.updateOne(
+        { id: requestId, creator: userId },
+        { $set: { notes } }
+    );
+}
+
 async function addOffer(userID, data) {
     await ready.promise;
     return await offers.insertOne({
@@ -585,6 +621,9 @@ module.exports = {
     updateOfferStatus,
     updateRequestStatus,
     updateRequestPrice,
+    updateOfferAvailableSeats,
+    updateOfferNotes,
+    updateRequestNotes,
     getRidesProvidedCount,
     addRequest,
     addOffer,

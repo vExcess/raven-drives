@@ -54,7 +54,7 @@ function jsonToUrlParameters(json) {
             if (out.length > 1) {
                 out += "&";
             }
-            out += `${key}=${json[key]}`;   
+            out += `${encodeURIComponent(key)}=${encodeURIComponent(value)}`;   
         }
     }
     return out;

@@ -98,26 +98,49 @@
         text-transform: none;
     }
 
-    .request-price-form {
+    .listing-edit-form {
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
         gap: 8px;
-        min-width: 120px;
+        width: 100%;
+        margin-top: 12px;
     }
 
-    .request-price-form label {
+    .listing-edit-form--inline {
+        align-items: flex-end;
+        width: auto;
+        min-width: 120px;
+        margin-top: 0;
+    }
+
+    .listing-edit-form label {
         margin-bottom: 0;
         font-size: 0.75rem;
     }
 
-    .request-price-form input[type="number"] {
+    .listing-edit-form input[type="number"] {
         width: 100px;
         padding: 8px;
         text-align: right;
     }
 
-    .price-save-status {
+    .listing-edit-form textarea {
+        min-height: 70px;
+        resize: vertical;
+    }
+
+    .seats-input-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .seats-total {
+        color: #aaa;
+        font-size: 0.9rem;
+    }
+
+    .save-status {
         font-size: 0.8rem;
         color: #4caf50;
         min-height: 1em;
@@ -191,25 +214,54 @@
                                 <div class="listing-meta">
                                     <strong>Pickup:</strong> <%= utils.secondsToDateTimeString(offer.pickup_time) %><br>
                                     <strong>Dropoff:</strong> <%= utils.secondsToDateTimeString(offer.dropoff_time) %><br>
-                                    <strong>Seats:</strong> <%= offer.available_seats %> / <%= offer.total_seats %> available<br>
+                                    <strong>Seats:</strong> <span class="seats-display" data-offer-id="<%= offer.id %>"><%= offer.available_seats %></span> / <%= offer.total_seats %> available<br>
                                     <strong>Posted:</strong> <%= utils.secondsToDateTimeString(offer.timestamp) %><br>
                                     Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
                                 </div>
-                                <% if (offer.notes) { %>
-                                    <div class="listing-notes">
-                                        <span class="notes-text"><%= offer.notes %></span>
-                                    </div>
-                                <% } %>
+                                <form
+                                    class="listing-edit-form listing-notes-form"
+                                    data-endpoint="/API/update_offer_notes"
+                                    data-id-key="offer_id"
+                                    data-id-value="<%= offer.id %>"
+                                >
+                                    <label for="offer-notes-<%= offer.id %>">Notes</label>
+                                    <textarea id="offer-notes-<%= offer.id %>" class="listing-notes-input" maxlength="500"><%= offer.notes %></textarea>
+                                    <button type="submit" class="btn btn-small">Save Notes</button>
+                                    <span class="save-status"></span>
+                                </form>
                             </div>
                             <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
                                 <div class="listing-price">
                                     $<%= offer.price %>
                                 </div>
+                                <form
+                                    class="listing-edit-form listing-edit-form--inline offer-seats-form"
+                                    data-endpoint="/API/update_offer_available_seats"
+                                    data-id-key="offer_id"
+                                    data-id-value="<%= offer.id %>"
+                                    data-total-seats="<%= offer.total_seats %>"
+                                >
+                                    <label for="offer-seats-<%= offer.id %>">Available Seats</label>
+                                    <div class="seats-input-row">
+                                        <input
+                                            type="number"
+                                            id="offer-seats-<%= offer.id %>"
+                                            class="offer-seats-input"
+                                            min="0"
+                                            max="<%= offer.total_seats %>"
+                                            value="<%= offer.available_seats %>"
+                                            required
+                                        >
+                                        <span class="seats-total">/ <%= offer.total_seats %></span>
+                                    </div>
+                                    <button type="submit" class="btn btn-small">Save Seats</button>
+                                    <span class="save-status"></span>
+                                </form>
                                 <div style="margin-top: 10px;">
                                     <% if (isOpen) { %>
-                                        <a href="/update_offer_status?offer_id=<%= offer.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
+                                        <a href="/update_offer_status?offer_id=<%= encodeURIComponent(offer.id) %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
                                     <% } else { %>
-                                        <a href="/update_offer_status?offer_id=<%= offer.id %>&status=open" class="btn btn-small">Open</a>
+                                        <a href="/update_offer_status?offer_id=<%= encodeURIComponent(offer.id) %>&status=open" class="btn btn-small">Open</a>
                                     <% } %>
                                 </div>
                             </div>
@@ -239,14 +291,25 @@
                                     <strong>Posted:</strong> <%= utils.secondsToDateTimeString(req.timestamp) %><br>
                                     Status: <strong><%= isOpen ? "OPEN" : "CLOSED" %></strong>
                                 </div>
-                                <% if (req.notes) { %>
-                                    <div class="listing-notes">
-                                        <span class="notes-text"><%= req.notes %></span>
-                                    </div>
-                                <% } %>
+                                <form
+                                    class="listing-edit-form listing-notes-form"
+                                    data-endpoint="/API/update_request_notes"
+                                    data-id-key="request_id"
+                                    data-id-value="<%= req.id %>"
+                                >
+                                    <label for="request-notes-<%= req.id %>">Notes</label>
+                                    <textarea id="request-notes-<%= req.id %>" class="listing-notes-input" maxlength="500"><%= req.notes %></textarea>
+                                    <button type="submit" class="btn btn-small">Save Notes</button>
+                                    <span class="save-status"></span>
+                                </form>
                             </div>
                             <div class="listing-actions" style="display: flex; flex-direction: column; align-items: flex-end;">
-                                <form class="request-price-form" data-request-id="<%= req.id %>">
+                                <form
+                                    class="listing-edit-form listing-edit-form--inline request-price-form"
+                                    data-endpoint="/API/update_request_price"
+                                    data-id-key="request_id"
+                                    data-id-value="<%= req.id %>"
+                                >
                                     <label for="request-price-<%= req.id %>">Offer ($)</label>
                                     <input
                                         type="number"
@@ -258,13 +321,13 @@
                                         required
                                     >
                                     <button type="submit" class="btn btn-small">Save Price</button>
-                                    <span class="price-save-status"></span>
+                                    <span class="save-status"></span>
                                 </form>
                                 <div style="margin-top: 10px;">
                                     <% if (isOpen) { %>
-                                        <a href="/update_request_status?request_id=<%= req.id %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
+                                        <a href="/update_request_status?request_id=<%= encodeURIComponent(req.id) %>&status=closed" class="btn btn-small" style="background-color: #555;">Close</a>
                                     <% } else { %>
-                                        <a href="/update_request_status?request_id=<%= req.id %>&status=open" class="btn btn-small">Open</a>
+                                        <a href="/update_request_status?request_id=<%= encodeURIComponent(req.id) %>&status=open" class="btn btn-small">Open</a>
                                     <% } %>
                                 </div>
                             </div>
@@ -279,34 +342,59 @@
 </div>
 
 <script>
-document.querySelectorAll(".request-price-form").forEach(form => {
+function attachDashboardForm(form, buildPayload, onSuccess) {
     form.addEventListener("submit", e => {
         e.preventDefault();
 
-        const statusEl = form.querySelector(".price-save-status");
-        const priceInput = form.querySelector(".request-price-input");
-        const price = Number(priceInput.value);
-
+        const statusEl = form.querySelector(".save-status");
         statusEl.textContent = "";
 
-        fetch("/API/update_request_price", {
+        fetch(form.dataset.endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({
-                request_id: form.dataset.requestId,
-                price
-            })
+            body: JSON.stringify(buildPayload(form))
         }).then(fetchMiddleware).then(res => {
             if (typeof res === "string" && res.startsWith("Error: ")) {
                 return;
             }
             statusEl.textContent = "Saved";
+            if (onSuccess) {
+                onSuccess(form);
+            }
             setTimeout(() => {
                 statusEl.textContent = "";
             }, 2000);
         });
     });
+}
+
+document.querySelectorAll(".request-price-form").forEach(form => {
+    attachDashboardForm(form, formEl => ({
+        request_id: formEl.dataset.idValue,
+        price: Number(formEl.querySelector(".request-price-input").value)
+    }));
+});
+
+document.querySelectorAll(".offer-seats-form").forEach(form => {
+    attachDashboardForm(form, formEl => ({
+        offer_id: formEl.dataset.idValue,
+        available_seats: Number(formEl.querySelector(".offer-seats-input").value)
+    }), formEl => {
+        const offerId = formEl.dataset.idValue;
+        const seatsDisplay = document.querySelector(`.seats-display[data-offer-id="${offerId}"]`);
+        if (seatsDisplay) {
+            seatsDisplay.textContent = formEl.querySelector(".offer-seats-input").value;
+        }
+    });
+});
+
+document.querySelectorAll(".listing-notes-form").forEach(form => {
+    const idKey = form.dataset.idKey;
+    attachDashboardForm(form, formEl => ({
+        [idKey]: formEl.dataset.idValue,
+        notes: formEl.querySelector(".listing-notes-input").value
+    }));
 });
 </script>

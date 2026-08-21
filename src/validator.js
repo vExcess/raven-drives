@@ -255,6 +255,48 @@ const updateRequestPrice = compileValidator({
     }
 });
 
+const updateOfferAvailableSeats = compileValidator({
+    offer_id: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    available_seats: {
+        type: "number",
+        min: 0,
+        required: true
+    }
+});
+
+const updateOfferNotes = compileValidator({
+    offer_id: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    notes: {
+        type: "string",
+        maxLength: 500,
+        required: true
+    }
+});
+
+const updateRequestNotes = compileValidator({
+    request_id: {
+        type: "string",
+        minLength: 1,
+        maxLength: 64,
+        required: true
+    },
+    notes: {
+        type: "string",
+        maxLength: 500,
+        required: true
+    }
+});
+
 const viewRequestsQuery = compileValidator({
     pickup_location: {
         type: "string",
@@ -298,6 +340,9 @@ module.exports = {
     addOffer,
     addRequest,
     updateRequestPrice,
+    updateOfferAvailableSeats,
+    updateOfferNotes,
+    updateRequestNotes,
     viewOffersQuery,
     viewRequestsQuery
 };
